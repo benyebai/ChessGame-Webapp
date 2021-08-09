@@ -1,33 +1,17 @@
 import React from 'react';
-import { allowedDir, knightMoves } from './precomputedData';
-import { boardEncrypted } from './globalVars';
+import "./chessPiece.css";
+import { useDrag, useDrop } from 'react-dnd';
 
-export class Knight extends React.Component {
-  constructor(props){
-    super(props);
-    this.pieceType = "knight"; 
-    this.isPinned = false;
-  }
+export function Knight({index}){
 
-  genValid(currentPos){
-    if(this.isPinned) return [];
-
-    let possibleSpots = []
-    for(let i = 0; i < knightMoves[currentPos].length; i++){
-      if(boardEncrypted[knightMoves[currentPos][i]] == "e"){
-        possibleSpots.push(knightMoves[currentPos][i]);
-      }
-    }
-
-    return possibleSpots;
-  }
-
-  render() {
+    const [collected, drag, dragPreview] = useDrag(() => ({
+        type : "chessPiece",
+        item: { pos:index }
+      }))
+    
     return(
-      <div onClick = {() => {this.props.board.setState({existingPieces:[["knight",13]]})}}>
-          <img src = {"/images/knight.png"} style = {{width:"100%", height:"100%"}} />
-      </div>
+        <div ref = {drag}>
+            <img src = "/images/knight.png" className = "chessPiece"/>
+        </div>
     );
-  }
 }
-

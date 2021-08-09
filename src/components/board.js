@@ -1,58 +1,58 @@
-import React, { Children } from 'react';
-import reactDom from 'react-dom';
-import {Knight} from './Knight';
-import {Square} from "./square.js";
-import { boardEncrypted, existingPieces} from './globalVars';
+import React from 'react';
+import { Knight } from './knight';
+import { Square } from './square';
 
-export class Board extends React.Component{
+export class Board extends React.Component {
+    constructor(props){
+        super(props);
 
-  constructor(props){
-    super(props);
+        let fakeBoard = [];
+        for(let i = 0; i < 64; i++){
+            fakeBoard.push("em");
+        }
+        let startingPieces = [
+            {piece:"knight", pos:17, alive:true}
+        ]
 
-    this.state = {
-      existingPieces : [["knight", 17]]
-    }
-  }
-
-  render(){
-    let entireBoard = [];
-    let boardCoded = [];
-    let existingPieces = this.state.existingPieces;
-    //ah shit cant make good looking code
-    for(let i = 0; i < 8; i++){
-
-      let line = [];
-      for(let j = 0; j < 8; j++){
-
-        let toAdd = <Square row = {i} col = {j} /> ;
-        let toAddCoded = "e";
-        for(let k = 0; k < existingPieces.length; k++){
-
-          if(existingPieces[k][1] == (i * 8) + j){
-
-            switch (existingPieces[k][0]) {
-              case "knight":
-                
-                toAdd = (<Square row = {i} col = {j}> <Knight board = {this} /> </Square>);
-                toAddCoded = "n";
-                break;
-            }
-
-          }
+        for(let i = 0; i < startingPieces.length; i++){
+            fakeBoard[startingPieces[i]["pos"]] = i;
         }
 
-        line.push(toAdd);
-        boardCoded.push(toAddCoded);
-      }
-      
-      entireBoard.push(<div style = {{display:"flex"}}>{line}</div>);
+        this.state = {
+            existingPiece:startingPieces,
+            board:fakeBoard
+        }
     }
 
-    return (
-      <div>
-        {entireBoard}
-      </div>
-    );
-  }
 
+
+    render() {
+        let entireBoard = []
+        console.log(this.state.board);
+
+        for(let i = 0; i < 8; i ++){
+            let currentRow = [];
+            for(let j = 0; j < 8; j++){
+                let squareProps = {row : i, col : j, board:this};
+
+                if(this.state.board[(i * 8) + j] === "em"){
+                    currentRow.push(<Square props = {squareProps} />);
+                }
+                else{
+                    switch(this.state.existingPiece[this.state.board[(i * 8) + j]]["piece"]){
+                        case "knight":
+                            currentRow.push(<Square props = {squareProps} > <Knight index = {(i * 8) + j} /> </Square>);
+                            break;
+                    }
+                }
+            }
+            entireBoard.push(<div style = {{display:"flex"}}>{currentRow}</div>);
+        }
+
+        return(
+            <div style = {{width:"100%", height:"100%"}}>
+            {entireBoard}
+            </div>
+        );
+    }
 }

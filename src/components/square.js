@@ -1,20 +1,38 @@
-import React, { Children } from 'react'
-import reactDom from 'react-dom'
+import React from 'react';
+import { useDrop } from 'react-dnd';
 
-export class Square extends React.Component{
 
-  render(){
-    //adds offset of 1 if row is not even, so row 1 3 5 7
-    //this way it looks like a chessboard
+export function Square({props, children}){
+    let row = props.row;
+    let col = props.col;
+    //console.log(props);
+    const fill = (row + (col % 2)) % 2 == 0 ? 'rgb(161, 111, 90)' : 'rgb(236, 221, 195)';
 
-    let black = "rgb(161, 111, 90)";
-    let white = "rgb(246, 221, 195)";
-    const fill = (this.props.col + (this.props.row % 2)) % 2 == 1 ? black : white;
-    return (
-      <div style={{ backgroundColor: fill, width:"100px", height:"100px" }}>
-        {this.props.children}
-      </div>
+    const [collectedProps, drop] = useDrop(() => ({
+        accept:"chessPiece",
+        drop:(item) => {
+            let fakeBoard = props.board.state.board;
+            let pieceMove = fakeBoard[item.pos];
+            console.log(item.pos);
+            console.log(row * 8 + col);
+
+            fakeBoard[item.pos] = "em";
+            fakeBoard[row * 8 + col] = pieceMove;
+
+            props.board.setState({"board": fakeBoard});
+        }
+    }))
+
+    return(
+        <div
+        style={{
+            backgroundColor: fill,
+            width: '100px',
+            height: '100px'
+        }}
+        ref={drop}
+        >
+        {children}
+        </div>
     );
-  }
-
 }

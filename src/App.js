@@ -1,16 +1,16 @@
 import React from 'react';
 import './App.css';
-import {Knight} from './components/Knight';
-import {Square} from "./components/square.js";
 import {Board} from "./components/board.js";
+import {HTML5Backend} from "react-dnd-html5-backend";
+import { DndProvider } from 'react-dnd';
 
 class App extends React.Component {
 
   render() {
     return(
-      <div style = {{width:"100%", height:"100%"}}>
+      <DndProvider backend = {HTML5Backend}>
         <Board />
-      </div>
+      </DndProvider>
     );
   }
 }
