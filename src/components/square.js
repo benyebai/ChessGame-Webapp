@@ -11,15 +11,7 @@ export function Square({props, children}){
     const [collectedProps, drop] = useDrop(() => ({
         accept:"chessPiece",
         drop:(item) => {
-            let fakeBoard = props.board.state.board;
-            let pieceMove = fakeBoard[item.pos];
-            console.log(item.pos);
-            console.log(row * 8 + col);
-
-            fakeBoard[item.pos] = "em";
-            fakeBoard[row * 8 + col] = pieceMove;
-
-            props.board.setState({"board": fakeBoard});
+            props.board.movePiece(item.pos, row * 8 + col);
         }
     }))
 
