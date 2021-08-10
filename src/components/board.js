@@ -12,15 +12,14 @@ export class Board extends React.Component {
             fakeBoard.push("em");
         }
         let startingPieces = [
-            {piece:"knight", pos:17, alive:true, team:"black", pinned:false}
+            {piece:"knight", pos:0, team:"black", pinned:false}
         ]
 
         for(let i = 0; i < startingPieces.length; i++){
-            fakeBoard[startingPieces[i]["pos"]] = i;
+            fakeBoard[startingPieces[i]["pos"]] = startingPieces[i];
         }
 
         this.state = {
-            existingPiece:startingPieces,
             board:fakeBoard
         }
 
@@ -32,7 +31,7 @@ export class Board extends React.Component {
         let fakeBoard = this.state.board;
         let pieceMove = fakeBoard[from];
 
-        if(this.state.existingPiece[pieceMove].piece === "knight"){
+        if(pieceMove.piece === "knight"){
             if(!this.checkValidKnight(from, to)) return;
         }
 
@@ -60,7 +59,8 @@ export class Board extends React.Component {
     checkValidKnight(start, stop){
         let board = this.state.board;
         let existingPiece = this.state.existingPiece;
-        if(board[stop] === "em" || existingPiece[board[stop]] != existingPiece[board[start]]){
+        if(board[stop] === "em" || board[stop].team != board[start].team){
+
             let distY = Math.abs(parseInt(start / 8) - parseInt(stop / 8));
             let distX = Math.abs((start % 8) - (stop % 8));
             return (distY == 2 && distX == 1) || (distX == 2 && distY == 1) ;
@@ -69,8 +69,7 @@ export class Board extends React.Component {
     }
 
     render() {
-        let entireBoard = []
-        console.log(this.state.board);
+        let entireBoard = [];
 
         for(let i = 0; i < 8; i ++){
             let currentRow = [];
@@ -81,9 +80,10 @@ export class Board extends React.Component {
                     currentRow.push(<Square props = {squareProps} />);
                 }
                 else{
-                    switch(this.state.existingPiece[this.state.board[(i * 8) + j]]["piece"]){
+                    switch(this.state.board[(i * 8) + j]["piece"]){
                         case "knight":
-                            currentRow.push(<Square props = {squareProps} > <Knight index = {(i * 8) + j} /> </Square>);
+                            currentRow.push(<Square props = {squareProps} > <Knight index = {(i * 8) + j} team = {this.state.board[(i * 8) + j]["team"]} /> </Square>);
+                            console.log(currentRow[j]);
                             break;
                     }
                 }

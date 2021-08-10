@@ -9,7 +9,12 @@ for(let i = 0; i < 8; i++){
         let east = 7 - j;
         let west = j;
 
-        allowedDir.push([north, east, south, west]);
+        let northEast = Math.min(north, east);
+        let northWest = Math.min(north, west);
+        let southEast = Math.min(south, east);
+        let southWest = Math.min(south, west);
+
+        allowedDir.push([north, east, south, west, northEast, southEast, southWest, northWest]);
     }
 }
 
