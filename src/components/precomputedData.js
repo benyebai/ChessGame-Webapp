@@ -1,5 +1,6 @@
 export let allowedDir = [];
 export let knightMoves = [];
+export let rookMoves = [];
 
 //how far north south east west you can move from each square
 for(let i = 0; i < 8; i++){
@@ -26,23 +27,23 @@ for(let i = 0; i < 8; i++){
 
         for(let y = -2; y <= 2; y++){
             if(y == 0) y += 1;
-            if(y > 0){
-                if(y > currentAllowed[2]) continue;
+            if(y > 0) {
+                if (y > currentAllowed[2]) continue;
             }
-            else{
-                if(Math.abs(y) > currentAllowed[0]) continue;
+            else {
+                if (Math.abs(y) > currentAllowed[0]) continue;
             }
             
 
-            for (let x = -1; x <= 1; x++){
-                if(x == 0) x += 1;
+            for (let x = -1; x <= 1; x++) {
+                if (x == 0) x += 1;
                 let realx = ((3 - Math.abs(y)) * x);
                 
-                if(realx > 0){
-                    if(realx > currentAllowed[1]) continue;
+                if (realx > 0){
+                    if (realx > currentAllowed[1]) continue;
                 }
-                else{
-                    if(Math.abs(realx) > currentAllowed[3]) continue;
+                else {
+                    if (Math.abs(realx) > currentAllowed[3]) continue;
                 }
                 
                 knightJumpsWhere.push((y * 8 + realx) + ((i * 8) + j));
@@ -53,3 +54,41 @@ for(let i = 0; i < 8; i++){
     }
 }
     
+// rook
+for(let i = 0; i < 64; i++){
+    let currentAllowed = allowedDir[i]
+    let possibleMoves = []
+
+    for (let j = 0; j < 4; j++) {
+        let direction = []
+        for (let x = 1; x < (currentAllowed[j] + 1); x++) {
+            
+
+            // north
+            if (j === 0) {
+                direction.push(i - (8 * x))
+            }
+            
+            // east
+            else if (j === 1) {
+                direction.push(i + (1 * x))
+            }
+            
+            // south
+            else if (j === 2) {
+                direction.push(i + (8 * x))
+            }
+
+            // west
+            else {
+                direction.push(i - (1 * x))
+            }
+
+        }
+        possibleMoves.push(direction)
+    } 
+
+    rookMoves.push(possibleMoves)
+}
+
+console.log(rookMoves)
