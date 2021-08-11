@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChessPiece } from './chessPiece';
 import { Square } from './square';
-import { knightMoves } from './precomputedData';
+import { knightMoves, rookMoves } from './precomputedData';
 import { CustomDragLayer } from './customDrag';
 
 export class Board extends React.Component {
@@ -40,6 +40,10 @@ export class Board extends React.Component {
             if(!this.checkValidKnight(from, to)) return;
         }
 
+        if(pieceMove.piece === "rook"){
+            if(!this.checkValidRook(from, to)) return;
+        }
+
         fakeBoard[from] = "em";
         fakeBoard[to] = pieceMove;
 
@@ -61,9 +65,8 @@ export class Board extends React.Component {
         return valid;
     }
 
-    checkValidKnight(start, stop){
+    checkValidKnight(start, stop) {
         let board = this.state.board;
-        let existingPiece = this.state.existingPiece;
         if(board[stop] === "em" || board[stop].team != board[start].team){
 
             let distY = Math.abs(parseInt(start / 8) - parseInt(stop / 8));
@@ -71,6 +74,37 @@ export class Board extends React.Component {
             return (distY == 2 && distX == 1) || (distX == 2 && distY == 1) ;
         }
         return false;
+    }
+
+    checkValidRook(start, stop) {
+        let board = this.state.board;
+        let where = []
+        if(board[stop] === "em" || board[stop].team != board[start].team){ 
+
+            // finding where the stop is located within the precomputed data
+            for (let i = 0; i < rookMoves[start].length; i++) {
+                for (let j = 0; j < rookMoves[start][i].length; j++) {
+                    if (rookMoves[start][i][j] === stop) {
+                        where = [i, j]
+                    }
+                }
+            }
+
+            console.log(where)
+
+            if (where.length === 0) {
+                return false
+            }
+            
+            // checking for enemies
+            for (let i = 0; i < where[1]; i++) {
+                if (board[rookMoves[start][where[0]][i]] != 'em'){
+                    return false
+                }
+            }
+        } 
+
+        return true
     }
 
     render() {
