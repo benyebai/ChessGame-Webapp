@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChessPiece } from './chessPiece';
 import { Square } from './square';
-import { knightMoves, rookMoves } from './precomputedData';
+import { knightMoves, rookMoves, bishopMoves } from './precomputedData';
 import { CustomDragLayer } from './customDrag';
 
 export class Board extends React.Component {
@@ -17,7 +17,8 @@ export class Board extends React.Component {
             {piece:"knight", pos:1, team:"black", pinned:false},
             {piece:"rook", pos:2, team:"white", pinned:false},
             {piece:"knight", pos:3, team:"black", pinned:false},
-            {piece:"knight", pos:4, team:"black", pinned:false}
+            {piece:"knight", pos:4, team:"black", pinned:false},
+            {piece:"bishop", pos:6, team:"black", pinned:false}
         ]
 
         for(let i = 0; i < startingPieces.length; i++){
@@ -42,6 +43,10 @@ export class Board extends React.Component {
 
         if(pieceMove.piece === "rook"){
             if(!this.checkValidRook(from, to)) return;
+        }
+
+        if(pieceMove.piece === "bishop"){
+            if(!this.checkValidBishop(from, to)) return;
         }
 
         fakeBoard[from] = "em";
@@ -99,6 +104,37 @@ export class Board extends React.Component {
             // checking for enemies
             for (let i = 0; i < where[1]; i++) {
                 if (board[rookMoves[start][where[0]][i]] != 'em'){
+                    return false
+                }
+            }
+        } 
+
+        return true
+    }
+
+    checkValidBishop(start, stop) {
+        let board = this.state.board;
+        let where = []
+        if(board[stop] === "em" || board[stop].team != board[start].team){ 
+
+            // finding where the stop is located within the precomputed data
+            for (let i = 0; i < bishopMoves[start].length; i++) {
+                for (let j = 0; j < bishopMoves[start][i].length; j++) {
+                    if (bishopMoves[start][i][j] === stop) {
+                        where = [i, j]
+                    }
+                }
+            }
+
+            console.log(where)
+
+            if (where.length === 0) {
+                return false
+            }
+            
+            // checking for enemies
+            for (let i = 0; i < where[1]; i++) {
+                if (board[bishopMoves[start][where[0]][i]] != 'em'){
                     return false
                 }
             }
