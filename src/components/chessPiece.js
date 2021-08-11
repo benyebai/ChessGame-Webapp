@@ -16,8 +16,6 @@ export function ChessPiece({index, team, piece}){
         })
       }))    
 
-
-    
     return(
         <>
         <DragPreviewImage connect={preview} src = {"/images/emptyImage.png"} />
