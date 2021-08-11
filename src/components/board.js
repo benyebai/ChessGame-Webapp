@@ -1,5 +1,5 @@
 import React from 'react';
-import { Knight } from './knight';
+import { ChessPiece } from './chessPiece';
 import { Square } from './square';
 import { knightMoves } from './precomputedData';
 
@@ -82,7 +82,7 @@ export class Board extends React.Component {
                 else{
                     switch(this.state.board[(i * 8) + j]["piece"]){
                         case "knight":
-                            currentRow.push(<Square props = {squareProps} > <Knight index = {(i * 8) + j} team = {this.state.board[(i * 8) + j]["team"]} /> </Square>);
+                            currentRow.push(<Square props = {squareProps} > <ChessPiece index = {(i * 8) + j} team = {this.state.board[(i * 8) + j]["team"]} /> </Square>);
                             console.log(currentRow[j]);
                             break;
                     }

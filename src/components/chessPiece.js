@@ -2,7 +2,7 @@ import React from 'react';
 import "./chessPiece.css";
 import { useDrag, DragPreviewImage } from 'react-dnd';
 
-export function Knight({index, team}){
+export function ChessPiece({index, team}){
 
     let imgRef = team + "Knight.png";
 
