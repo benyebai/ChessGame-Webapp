@@ -1,10 +1,10 @@
 import React from 'react';
 import "./chessPiece.css";
-import { useDrag, DragPreviewImage } from 'react-dnd';
+import { useDrag, DragPreviewImage, useDragLayer } from 'react-dnd';
 
-export function ChessPiece({index, team}){
+export function ChessPiece({index, team, piece}){
 
-    let imgRef = team + "Knight.png";
+    let imgRef = team + piece + ".png";
 
     const [{isDragging}, drag, preview] = useDrag(() => ({
         type : "chessPiece",
@@ -16,10 +16,12 @@ export function ChessPiece({index, team}){
     
     return(
         <>
-        <DragPreviewImage connect={preview} src = {`/images/${imgRef}`} />
+        {/*<DragPreviewImage connect={preview} src = {`/images/${imgRef}`} />*/}
+        
         <div ref = {drag}>
             <img src = {`/images/${imgRef}`} className = "chessPiece" style = {{width:"100px", opacity: isDragging ? 0 : 1}}/>
         </div>
+        
         </>
     );
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { ChessPiece } from './chessPiece';
 import { Square } from './square';
 import { knightMoves } from './precomputedData';
+import { CustomDragLayer } from './customDrag';
 
 export class Board extends React.Component {
     constructor(props){
@@ -82,7 +83,16 @@ export class Board extends React.Component {
                 else{
                     switch(this.state.board[(i * 8) + j]["piece"]){
                         case "knight":
-                            currentRow.push(<Square props = {squareProps} > <ChessPiece index = {(i * 8) + j} team = {this.state.board[(i * 8) + j]["team"]} /> </Square>);
+                            currentRow.push(
+                            <Square props = {squareProps} >
+                                <ChessPiece 
+                                index = {(i * 8) + j}
+                                team = {this.state.board[(i * 8) + j]["team"]}
+                                piece = {this.state.board[(i * 8) + j]["piece"]}
+                                />
+
+
+                            </Square>);
                             console.log(currentRow[j]);
                             break;
                     }
@@ -94,6 +104,7 @@ export class Board extends React.Component {
         return(
             <div style = {{width:"100%", height:"100%"}}>
             {entireBoard}
+            <CustomDragLayer />
             </div>
         );
     }
