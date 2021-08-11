@@ -13,7 +13,11 @@ export class Board extends React.Component {
             fakeBoard.push("em");
         }
         let startingPieces = [
-            {piece:"knight", pos:0, team:"black", pinned:false}
+            {piece:"knight", pos:0, team:"black", pinned:false},
+            {piece:"knight", pos:1, team:"black", pinned:false},
+            {piece:"rook", pos:2, team:"white", pinned:false},
+            {piece:"knight", pos:3, team:"black", pinned:false},
+            {piece:"knight", pos:4, team:"black", pinned:false}
         ]
 
         for(let i = 0; i < startingPieces.length; i++){
@@ -81,21 +85,17 @@ export class Board extends React.Component {
                     currentRow.push(<Square props = {squareProps} />);
                 }
                 else{
-                    switch(this.state.board[(i * 8) + j]["piece"]){
-                        case "knight":
-                            currentRow.push(
-                            <Square props = {squareProps} >
-                                <ChessPiece 
-                                index = {(i * 8) + j}
-                                team = {this.state.board[(i * 8) + j]["team"]}
-                                piece = {this.state.board[(i * 8) + j]["piece"]}
-                                />
+                    currentRow.push(
+                    <Square props = {squareProps} >
+                        <ChessPiece 
+                        index = {(i * 8) + j}
+                        team = {this.state.board[(i * 8) + j]["team"]}
+                        piece = {this.state.board[(i * 8) + j]["piece"]}
+                        />
 
 
-                            </Square>);
-                            console.log(currentRow[j]);
-                            break;
-                    }
+                    </Square>);
+                    console.log(currentRow[j]);
                 }
             }
             entireBoard.push(<div style = {{display:"flex"}}>{currentRow}</div>);

@@ -1,6 +1,8 @@
 import React from 'react';
 import "./chessPiece.css";
-import { useDrag, DragPreviewImage, useDragLayer } from 'react-dnd';
+import { useDrag, DragPreviewImage } from 'react-dnd';
+import { useEffect } from 'react';
+import { getEmptyImage } from 'react-dnd-html5-backend';
 
 export function ChessPiece({index, team, piece}){
 
@@ -8,15 +10,17 @@ export function ChessPiece({index, team, piece}){
 
     const [{isDragging}, drag, preview] = useDrag(() => ({
         type : "chessPiece",
-        item: { pos:index },
+        item: { pos:index, team:team, piece:piece },
         collect: (monitor) => ({
             isDragging : !!monitor.isDragging()
         })
-      }))
+      }))    
+
+
     
     return(
         <>
-        {/*<DragPreviewImage connect={preview} src = {`/images/${imgRef}`} />*/}
+        <DragPreviewImage connect={preview} src = {"/images/emptyImage.png"} />
         
         <div ref = {drag}>
             <img src = {`/images/${imgRef}`} className = "chessPiece" style = {{width:"100px", opacity: isDragging ? 0 : 1}}/>

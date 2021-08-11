@@ -1,3 +1,6 @@
+import { useDragLayer } from 'react-dnd';
+import './chessPiece.css';
+
 
 const layerStyles = {
     position: "fixed",
@@ -17,7 +20,7 @@ function getItemStyles(currentOffset) {
   }
   let { x, y } = currentOffset;
 
-  const transform = `translate(${x - 50}px, ${y - 15}px)`;
+  const transform = `translate(${x - 50}px, ${y - 50}px)`;
   return {
     transform,
     WebkitTransform: transform
@@ -26,11 +29,11 @@ function getItemStyles(currentOffset) {
 
 export const CustomDragLayer = (props) => {
   const {
-    itemType,
+    item,
     isDragging,
     currentOffset,
   } = useDragLayer((monitor) => ({
-    itemType: monitor.getItemType(),
+    item : monitor.getItem(),
     currentOffset: monitor.getClientOffset(),
     isDragging: monitor.isDragging(),
   }));
@@ -52,13 +55,15 @@ export const CustomDragLayer = (props) => {
   if (!isDragging) {
     return null;
   }
+
+  let imgRef = item.team + item.piece + ".png";
+
   return (
     <div style={layerStyles}>
       <div
         style={getItemStyles(currentOffset)}
       >
-            <div style = {{width:"100px", height:"20px", backgroundColor:"red"}}>
-            </div>
+            <img src = {`/images/${imgRef}`} className = "chessPiece" style = {{width:"100px"}}/>
       </div>
     </div>
   );
