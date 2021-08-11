@@ -42,6 +42,7 @@ export class Board extends React.Component {
 
         fakeBoard[from] = "em";
         fakeBoard[to] = pieceMove;
+        fakeBoard[to] = JSON.parse(JSON.stringify(fakeBoard[to]));
 
         this.setState({"board": fakeBoard});
     }
@@ -63,7 +64,6 @@ export class Board extends React.Component {
 
     checkValidKnight(start, stop){
         let board = this.state.board;
-        let existingPiece = this.state.existingPiece;
         if(board[stop] === "em" || board[stop].team != board[start].team){
 
             let distY = Math.abs(parseInt(start / 8) - parseInt(stop / 8));
@@ -92,10 +92,7 @@ export class Board extends React.Component {
                         team = {this.state.board[(i * 8) + j]["team"]}
                         piece = {this.state.board[(i * 8) + j]["piece"]}
                         />
-
-
                     </Square>);
-                    console.log(currentRow[j]);
                 }
             }
             entireBoard.push(<div style = {{display:"flex"}}>{currentRow}</div>);
@@ -103,8 +100,8 @@ export class Board extends React.Component {
 
         return(
             <div style = {{width:"100%", height:"100%"}}>
-            {entireBoard}
             <CustomDragLayer />
+            {entireBoard}
             </div>
         );
     }
