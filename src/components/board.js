@@ -49,7 +49,6 @@ export class Board extends React.Component {
             {piece:"bishop", key:61, team:"white", pinned:false},
             {piece:"knight", key:62, team:"white", pinned:false},
             {piece:"rook", key:63, team:"white", pinned:false},
-            
         ] 
 
         for(let i = 0; i < startingPieces.length; i++){
@@ -61,7 +60,8 @@ export class Board extends React.Component {
 
         this.state = {
             board:fakeBoard,
-            turnNum:0
+            turnNum:1,
+            whitesTurn: true
         }
 
         this.movePiece = this.movePiece.bind(this);
@@ -71,6 +71,13 @@ export class Board extends React.Component {
     movePiece(from, to){
         let fakeBoard = this.state.board;
         let pieceMove = fakeBoard[from];
+
+        if(this.state.whitesTurn){
+            if(pieceMove.team === "black") return;
+        }
+        else if(!this.state.whitesTurn){
+            if(pieceMove.team === "white") return;
+        }
 
         if(pieceMove.piece === "knight"){
             if(!this.checkValidKnight(from, to)) return;
@@ -109,7 +116,8 @@ export class Board extends React.Component {
         this.setState(prevState => {
             return({
             "board": fakeBoard,
-            turnNum: prevState.turnNum + 1
+            turnNum: prevState.turnNum + 1,
+            whitesTurn : !prevState.whitesTurn
             });
         });
     }
@@ -204,21 +212,27 @@ export class Board extends React.Component {
         //forward mvoement check
         let board = this.state.board;
 
-        console.log(this.state.turnNum);
-
         //1 means down
         let movementDir = 1;
         if(board[start].team === "white"){
             movementDir = -1;
         }
 
+        if(board[start] === "em") return false;
+        //if the start and stop is on the same row, required due to quriks of making board 1 layer
+        if(Math.floor(stop / 8) == Math.floor(start / 8)) return false;
+        if(Math.abs(Math.floor(stop / 8) - Math.floor(start/8)) == 2){
+            if(stop === start + (16 * movementDir) && board[stop] === "em"){
+                return "double";
+            }
+            else return false
+        }
+
         //vertical movement
         if(stop === start + (8 * movementDir) && board[stop] === "em"){
             return true;
         }
-        if(stop === start + (16 * movementDir) && board[stop] === "em"){
-            return "double";
-        }
+
         //diag movement
         if(stop === start + (7 * movementDir) && board[stop].team !== board[start].team && board[stop] !== "em"){
             return true;
@@ -243,8 +257,26 @@ export class Board extends React.Component {
         return false
     }
 
+    genValidPawn(start){
+        let validMoves = []
+        let board = this.state.board;
+
+        if(board[start].pinned){
+            //not exactly true all the time
+            return [];
+        }
+
+        let movementDir = 1;
+        if(board[start].team === "white"){
+            movementDir = -1;
+        }  
+
+        return validMoves;
+    }
+
     render() {
         let entireBoard = [];
+        //console.log(this.genValidPawn(8));
 
         for(let i = 0; i < 8; i ++){
             let currentRow = [];
