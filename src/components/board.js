@@ -271,6 +271,11 @@ export class Board extends React.Component {
             movementDir = -1;
         }  
 
+        if(this.checkValidPawn(start, start + (8 * movementDir))) validMoves.push(start + (8 * movementDir));
+        if(this.checkValidPawn(start, start + (16 * movementDir))) validMoves.push(start + (16 * movementDir));
+        if(this.checkValidPawn(start, start + (7 * movementDir))) validMoves.push(start + (7 * movementDir));
+        if(this.checkValidPawn(start, start + (9 * movementDir))) validMoves.push(start + (9 * movementDir));
+
         return validMoves;
     }
 
