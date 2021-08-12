@@ -12,21 +12,25 @@ export class Board extends React.Component {
         for(let i = 0; i < 64; i++){
             fakeBoard.push("em");
         }
+
         let startingPieces = [
 
-            {piece:"knight", pos:0, team:"black", pinned:false},
-            {piece:"knight", pos:1, team:"black", pinned:false},
-            {piece:"rook", pos:2, team:"white", pinned:false},
-            {piece:"knight", pos:3, team:"black", pinned:false},
-            {piece:"knight", pos:4, team:"black", pinned:false},
-            {piece:"bishop", pos:6, team:"black", pinned:false}
+            {piece:"knight", key:0, team:"black", pinned:false},
+            {piece:"knight", key:1, team:"black", pinned:false},
+            {piece:"rook", key:2, team:"white", pinned:false},
+            {piece:"knight", key:3, team:"black", pinned:false},
+            {piece:"knight", key:4, team:"black", pinned:false},
+            {piece:"bishop", key:6, team:"black", pinned:false}
 
             
         ]
 
         for(let i = 0; i < startingPieces.length; i++){
+            
             fakeBoard[startingPieces[i]["key"]] = startingPieces[i];
         }
+
+        console.log(fakeBoard)
 
         this.state = {
             board:fakeBoard
@@ -146,6 +150,7 @@ export class Board extends React.Component {
     }
 
     render() {
+        console.log(this.state.board)
         let entireBoard = [];
 
         for(let i = 0; i < 8; i ++){
