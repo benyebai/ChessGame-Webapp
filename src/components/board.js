@@ -271,13 +271,48 @@ export class Board extends React.Component {
         return validMoves;
     }
 
-    findPinnedPieces(kingSquare){
-        //first does rook moves
-        let possiblePins = queenMoves[kingSquare];
+    checkLegal(kingSquare, kingTeam){
+        //first checks for sliding pieces
+        let possibleLines = queenMoves[kingSquare];
+        let board = this.state.board;
         for(let i = 0; i < 4; i++){
-            let currentDir = possiblePins[i];
+            let currentDir = possibleLines[i];
+            for(let j = 0; j < currentDir.length; j++){
+                if(board[currentDir[j]] != "em"){
+                    if(board[currentDir[j]].piece === "queen" || board[currentDir[j]].piece === "rook"){
+                        if(board[currentDir[j]].team != kingTeam){
+                            return false
+                        } else break
+                    } else break
+                }
+            }
 
         }
+        for(let i = 4; i < 8; i++){
+            let currentDir = possibleLines[i];
+            for(let j = 0; j < currentDir.length; j++){
+                if(board[currentDir[j]] != "em"){
+                    if(board[currentDir[j]].piece === "queen" || board[currentDir[j]].piece === "bishop"){
+                        if(board[currentDir[j]].team != kingTeam){
+                            return false
+                        } else break
+                    }else break
+                }
+            }
+        }
+
+        for(let i = 0; i < knightMoves[kingSquare].length; i++){
+            let pieceToCheck = board[knightMoves[kingSquare][i]]
+            if(pieceToCheck !== "em" && pieceToCheck.team != kingTeam && pieceToCheck.piece === "knight"){
+                return false
+            }
+        }
+
+        let enemyPawnMoveDir = 1;
+        if(kingTeam === "black") enemyPawnMoveDir = -1;
+
+        
+
     }
 
     checkValidKing(start, stop){
@@ -287,7 +322,6 @@ export class Board extends React.Component {
                 return true
             }
         }
-
 
         return false
     }
