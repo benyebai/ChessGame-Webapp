@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChessPiece } from './chessPiece';
 import { Square } from './square';
-import { knightMoves, rookMoves, bishopMoves, queenMoves } from './precomputedData';
+import { knightMoves, rookMoves, bishopMoves, queenMoves, kingMoves } from './precomputedData';
 import { CustomDragLayer } from './customDrag';
 
 export class Board extends React.Component {
@@ -94,6 +94,10 @@ export class Board extends React.Component {
 
         if(pieceMove.piece === "queen"){
             if(!this.checkValidRookBishopQueen(from, to, 'queen')) return;
+        }
+
+        if(pieceMove.piece === "king"){
+            if(!this.checkValidKing(from, to)) return;
         }
 
         if(pieceMove.piece === "pawn"){
@@ -275,6 +279,19 @@ export class Board extends React.Component {
 
         }
     }
+
+    checkValidKing(start, stop){
+        let board = this.state.board;
+        if (board[stop] === 'em') {
+            if (kingMoves[start].includes(stop)) {
+                return true
+            }
+        }
+
+
+        return false
+    }
+
 
     render() {
         let entireBoard = [];
