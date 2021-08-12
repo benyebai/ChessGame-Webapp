@@ -272,10 +272,7 @@ export class Board extends React.Component {
         let possiblePins = queenMoves[kingSquare];
         for(let i = 0; i < 4; i++){
             let currentDir = possiblePins[i];
-            let foundPiece = false;
-            for(let j = 0; j < currentDir.length; j++)[
-                
-            ]
+
         }
     }
 
