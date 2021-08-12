@@ -14,16 +14,43 @@ export class Board extends React.Component {
         }
 
         let startingPieces = [
-
-            {piece:"knight", key:0, team:"black", pinned:false},
+            {piece:"rook", key:0, team:"black", pinned:false},
             {piece:"knight", key:1, team:"black", pinned:false},
-            {piece:"rook", key:2, team:"white", pinned:false},
-            {piece:"knight", key:3, team:"black", pinned:false},
-            {piece:"knight", key:4, team:"black", pinned:false},
-            {piece:"bishop", key:6, team:"black", pinned:false}
+            {piece:"bishop", key:2, team:"black", pinned:false},
+            {piece:"queen", key:3, team:"black", pinned:false},
+            {piece:"king", key:4, team:"black", pinned:false},
+            {piece:"bishop", key:5, team:"black", pinned:false},
+            {piece:"knight", key:6, team:"black", pinned:false},
+            {piece:"rook", key:7, team:"black", pinned:false},
 
+            {piece:"pawn", key:8, team:"black", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:9, team:"black", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:10, team:"black", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:11, team:"black", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:12, team:"black", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:13, team:"black", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:14, team:"black", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:15, team:"black", pinned:false, moved:false, doublejumped: -1},
+
+            {piece:"pawn", key:48, team:"white", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:49, team:"white", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:50, team:"white", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:51, team:"white", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:52, team:"white", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:53, team:"white", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:54, team:"white", pinned:false, moved:false, doublejumped: -1},
+            {piece:"pawn", key:55, team:"white", pinned:false, moved:false, doublejumped: -1},
+
+            {piece:"rook", key:56, team:"white", pinned:false},
+            {piece:"knight", key:57, team:"white", pinned:false},
+            {piece:"bishop", key:58, team:"white", pinned:false},
+            {piece:"queen", key:59, team:"white", pinned:false},
+            {piece:"king", key:60, team:"white", pinned:false},
+            {piece:"bishop", key:61, team:"white", pinned:false},
+            {piece:"knight", key:62, team:"white", pinned:false},
+            {piece:"rook", key:63, team:"white", pinned:false},
             
-        ]
+        ] 
 
         for(let i = 0; i < startingPieces.length; i++){
             
@@ -33,7 +60,8 @@ export class Board extends React.Component {
         console.log(fakeBoard)
 
         this.state = {
-            board:fakeBoard
+            board:fakeBoard,
+            turnNum:0
         }
 
         this.movePiece = this.movePiece.bind(this);
@@ -56,11 +84,34 @@ export class Board extends React.Component {
             if(!this.checkValidBishop(from, to)) return;
         }
 
+        if(pieceMove.piece === "pawn"){
+            let pawnMove = this.checkValidPawn(from, to)
+            if(pawnMove === "double"){
+                //setting as turn number since boolean would mean i would need to set false later
+                if(pieceMove.moved) return;
+                fakeBoard[from].doublejumped = this.state.turnNum;
+            }
+            else if(pawnMove === true){
+                //dont do anything
+            }
+            else if(pawnMove !== false){
+                //must mean its an integer referring to direction on the en passant
+                fakeBoard[to - (pawnMove * 8)] = "em";
+            }
+            else return;
+
+            pieceMove.moved = true;
+        }
+
         fakeBoard[from] = "em";
         fakeBoard[to] = pieceMove;
-        fakeBoard[to] = JSON.parse(JSON.stringify(fakeBoard[to]));
-
-        this.setState({"board": fakeBoard});
+        let currentTurn = this.state.turnNum
+        this.setState(prevState => {
+            return({
+            "board": fakeBoard,
+            turnNum: prevState.turnNum + 1
+            });
+        });
     }
 
     genValidMovesKnight(pos){
@@ -149,8 +200,50 @@ export class Board extends React.Component {
         return true
     }
 
+    checkValidPawn(start, stop){
+        //forward mvoement check
+        let board = this.state.board;
+
+        console.log(this.state.turnNum);
+
+        //1 means down
+        let movementDir = 1;
+        if(board[start].team === "white"){
+            movementDir = -1;
+        }
+
+        //vertical movement
+        if(stop === start + (8 * movementDir) && board[stop] === "em"){
+            return true;
+        }
+        if(stop === start + (16 * movementDir) && board[stop] === "em"){
+            return "double";
+        }
+        //diag movement
+        if(stop === start + (7 * movementDir) && board[stop].team !== board[start].team && board[stop] !== "em"){
+            return true;
+        }
+        if(stop === start + (9 * movementDir) && board[stop].team !== board[start].team && board[stop] !== "em"){
+            return true;
+        }
+        //en passant
+        //if pawn to my left or right double jumped last turn
+        if(board[start - (1 * movementDir)].doublejumped === this.state.turnNum - 1){
+            if(stop === start + (7 * movementDir) && board[stop] === "em"){
+                return movementDir;
+            }
+        }
+
+        if(board[start + (1 * movementDir)].doublejumped === this.state.turnNum - 1){
+            if(stop === start + (9 * movementDir) && board[stop] === "em"){
+                return movementDir;
+            }
+        }
+
+        return false
+    }
+
     render() {
-        console.log(this.state.board)
         let entireBoard = [];
 
         for(let i = 0; i < 8; i ++){
