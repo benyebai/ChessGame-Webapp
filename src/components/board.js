@@ -72,6 +72,7 @@ export class Board extends React.Component {
         let fakeBoard = this.state.board;
         let pieceMove = fakeBoard[from];
 
+        
         if(this.state.whitesTurn){
             if(pieceMove.team === "black") return;
         }
@@ -266,9 +267,21 @@ export class Board extends React.Component {
         return validMoves;
     }
 
+    findPinnedPieces(kingSquare){
+        //first does rook moves
+        let possiblePins = queenMoves[kingSquare];
+        for(let i = 0; i < 4; i++){
+            let currentDir = possiblePins[i];
+            let foundPiece = false;
+            for(let j = 0; j < currentDir.length; j++)[
+                
+            ]
+        }
+    }
+
     render() {
         let entireBoard = [];
-        //console.log(this.genValidPawn(8));
+        console.log(queenMoves);
 
         for(let i = 0; i < 8; i ++){
             let currentRow = [];
