@@ -2,6 +2,7 @@ export let allowedDir = [];
 export let knightMoves = [];
 export let rookMoves = [];
 export let bishopMoves = [];
+export let queenMoves = [];
 
 //how far north south east west you can move from each square
 for(let i = 0; i < 8; i++){
@@ -129,4 +130,59 @@ for(let i = 0; i < 64; i++){
     bishopMoves.push(possibleMoves)
 }
 
-console.log(bishopMoves)
+
+for(let i = 0; i < 64; i++){
+    let currentAllowed = allowedDir[i]
+    let possibleMoves = []
+
+    for (let j = 0; j < 8; j++) {
+        let direction = []
+        for (let x = 1; x < (currentAllowed[j] + 1); x++) {
+            
+
+            // north
+            if (j === 0) {
+                direction.push(i - (8 * x))
+            }
+            
+            // east
+            else if (j === 1) {
+                direction.push(i + (1 * x))
+            }
+            
+            // south
+            else if (j === 2) {
+                direction.push(i + (8 * x))
+            }
+
+            // west
+            else if (j === 3) {
+                direction.push(i - (1 * x))
+            }
+
+            // north east
+            else if (j === 4) {
+                direction.push(i - (7 * x))
+            }
+            
+            // south east
+            else if (j === 5) {
+                direction.push(i + (9 * x))
+            }
+            
+            // south west
+            else if (j === 6) {
+                direction.push(i + (7 * x))
+            }
+
+            // west
+            else {
+                direction.push(i - (9 * x))
+            }
+
+        }
+        possibleMoves.push(direction)
+    } 
+
+    queenMoves.push(possibleMoves)
+}
