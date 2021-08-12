@@ -130,7 +130,7 @@ for(let i = 0; i < 64; i++){
     bishopMoves.push(possibleMoves)
 }
 
-// rook
+
 for(let i = 0; i < 64; i++){
     let currentAllowed = allowedDir[i]
     let possibleMoves = []
