@@ -282,7 +282,7 @@ export class Board extends React.Component {
 
     checkValidKing(start, stop){
         let board = this.state.board;
-        if (board[stop] === 'em') {
+        if(board[stop] === "em" || board[stop].team != board[start].team) {
             if (kingMoves[start].includes(stop)) {
                 return true
             }
