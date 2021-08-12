@@ -14,41 +14,7 @@ export class Board extends React.Component {
         }
 
         let startingPieces = [
-            {piece:"rook", key:0, team:"black", pinned:false},
-            {piece:"knight", key:1, team:"black", pinned:false},
-            {piece:"bishop", key:2, team:"black", pinned:false},
-            {piece:"queen", key:3, team:"black", pinned:false},
-            {piece:"king", key:4, team:"black", pinned:false},
-            {piece:"bishop", key:5, team:"black", pinned:false},
-            {piece:"knight", key:6, team:"black", pinned:false},
-            {piece:"rook", key:7, team:"black", pinned:false},
 
-            {piece:"pawn", key:8, team:"black", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:9, team:"black", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:10, team:"black", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:11, team:"black", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:12, team:"black", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:13, team:"black", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:14, team:"black", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:15, team:"black", pinned:false, moved:false, doublejumped: -1},
-
-            {piece:"pawn", key:48, team:"white", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:49, team:"white", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:50, team:"white", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:51, team:"white", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:52, team:"white", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:53, team:"white", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:54, team:"white", pinned:false, moved:false, doublejumped: -1},
-            {piece:"pawn", key:55, team:"white", pinned:false, moved:false, doublejumped: -1},
-
-            {piece:"rook", key:56, team:"white", pinned:false},
-            {piece:"knight", key:57, team:"white", pinned:false},
-            {piece:"bishop", key:58, team:"white", pinned:false},
-            {piece:"queen", key:59, team:"white", pinned:false},
-            {piece:"king", key:60, team:"white", pinned:false},
-            {piece:"bishop", key:61, team:"white", pinned:false},
-            {piece:"knight", key:62, team:"white", pinned:false},
-            {piece:"rook", key:63, team:"white", pinned:false},
             
         ] 
 
