@@ -70,7 +70,7 @@ export class Board extends React.Component {
 
     movePiece(from, to){
         let fakeBoard = this.state.board;
-        let oldBoardState = this.state.board;
+        let oldBoardState = JSON.parse(JSON.stringify(this.state.board));
         let pieceMove = fakeBoard[from];
         
         
@@ -115,8 +115,8 @@ export class Board extends React.Component {
             changePositions = false;
 
             if(kingsMove === "black left"){
-                board[1] = board[from]
-                board[2] = board[to]
+                board[2] = board[from]
+                board[3] = board[to]
                 board[from] = 'em'
                 board[to] = 'em'
             }
@@ -127,8 +127,8 @@ export class Board extends React.Component {
                 board[from] = 'em'
             }
             if(kingsMove == "white left"){
-                board[57] = board[from]
-                board[58] = board[to]
+                board[58] = board[from]
+                board[59] = board[to]
                 board[from] = 'em'
                 board[to] = 'em'
             }
@@ -170,7 +170,11 @@ export class Board extends React.Component {
         fakeBoard[to] = pieceMove;
         }
 
+        console.log(this.checkLegal(kingsSquare, teamMoving, fakeBoard));
+
         if(!this.checkLegal(kingsSquare, teamMoving, fakeBoard)){
+            console.log(oldBoardState)
+            console.log(this.state.board);
             this.setState({"board":oldBoardState});
             return;
         }
