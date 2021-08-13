@@ -70,14 +70,24 @@ export class Board extends React.Component {
 
     movePiece(from, to){
         let fakeBoard = this.state.board;
+        let oldBoardState = this.state.board;
         let pieceMove = fakeBoard[from];
-
         
         if(this.state.whitesTurn){
             if(pieceMove.team === "black") return;
         }
         else if(!this.state.whitesTurn){
             if(pieceMove.team === "white") return;
+        }
+        
+        let kingsSquare = 0;
+        let teamMoving = "black";
+        if(this.state.whitesTurn) teamMoving = "white"
+
+        for(let i = 0; i < 64; i++){
+            if(fakeBoard[i].piece === "king" && fakeBoard[i].team == teamMoving){
+                kingsSquare = i;
+            }
         }
 
         if(pieceMove.piece === "knight"){
@@ -120,8 +130,15 @@ export class Board extends React.Component {
             pieceMove.moved = true;
         }
 
+
         fakeBoard[from] = "em";
         fakeBoard[to] = pieceMove;
+
+        if(!this.checkLegal(kingsSquare, teamMoving, fakeBoard)){
+            this.setState({"board":oldBoardState});
+            return;
+        }
+
         let currentTurn = this.state.turnNum
         this.setState(prevState => {
             return({
@@ -272,10 +289,13 @@ export class Board extends React.Component {
         return validMoves;
     }
 
-    checkLegal(kingSquare, kingTeam){
+    checkLegal(kingSquare, kingTeam, boardState){
+        //makes the king pretend to be every piece in the game, and checks if it can run into the piece its imitating
         //first checks for sliding pieces
+
+        console.log("asd")
         let possibleLines = queenMoves[kingSquare];
-        let board = this.state.board;
+        let board = boardState;
         for(let i = 0; i < 4; i++){
             let currentDir = possibleLines[i];
             for(let j = 0; j < currentDir.length; j++){
@@ -305,6 +325,7 @@ export class Board extends React.Component {
         for(let i = 0; i < knightMoves[kingSquare].length; i++){
             let pieceToCheck = board[knightMoves[kingSquare][i]]
             if(pieceToCheck !== "em" && pieceToCheck.team != kingTeam && pieceToCheck.piece === "knight"){
+
                 return false
             }
         }
@@ -312,8 +333,23 @@ export class Board extends React.Component {
         let enemyPawnMoveDir = 1;
         if(kingTeam === "black") enemyPawnMoveDir = -1;
 
-        
+        for(let i = 0; i < kingMoves[kingSquare].length; i++){
+            let squareToMove = kingMoves[kingSquare][i];
+            let moveDiff = Math.abs(squareToMove - kingSquare);
+            let pieceOnSquare = board[squareToMove];
+            if(moveDiff == 9 || moveDiff == 7){
+                if(pieceOnSquare !== "em" && (pieceOnSquare.piece === "king" || pieceOnSquare.piece === "pawn") && pieceOnSquare.team !== kingTeam){
+                    return false;
+                }
+            }
+            else{
+                if(pieceOnSquare !== "em" && pieceOnSquare.piece === "king" && pieceOnSquare.team !== kingTeam){
+                    return false;
+                }
+            }
+        }
 
+        return true;
     }
 
     checkValidKing(start, stop){
@@ -356,14 +392,13 @@ export class Board extends React.Component {
                 }
             }
         }
-        this.state
+        this.setState({board:board})
         return false
     }
 
 
     render() {
         let entireBoard = [];
-        console.log(queenMoves);
 
         for(let i = 0; i < 8; i ++){
             let currentRow = [];

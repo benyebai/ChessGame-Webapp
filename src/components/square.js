@@ -6,7 +6,7 @@ export function Square({props, children}){
     let row = props.row;
     let col = props.col;
     //console.log(props);
-    const fill = (row + (col % 2)) % 2 == 0 ? 'rgb(161, 111, 90)' : 'rgb(236, 221, 195)';
+    const fill = (row + (col % 2)) % 2 == 1 ? 'rgb(161, 111, 90)' : 'rgb(236, 221, 195)';
 
     const [collectedProps, drop] = useDrop(() => ({
         accept:"chessPiece",
