@@ -14,14 +14,14 @@ export class Board extends React.Component {
         }
 
         let startingPieces = [
-            {piece:"rook", key:0, team:"black", pinned:false},
+            {piece:"rook", key:0, team:"black", pinned:false, moved:false},
             {piece:"knight", key:1, team:"black", pinned:false},
             {piece:"bishop", key:2, team:"black", pinned:false},
             {piece:"queen", key:3, team:"black", pinned:false},
-            {piece:"king", key:4, team:"black", pinned:false},
+            {piece:"king", key:4, team:"black", pinned:false, moved:false},
             {piece:"bishop", key:5, team:"black", pinned:false},
             {piece:"knight", key:6, team:"black", pinned:false},
-            {piece:"rook", key:7, team:"black", pinned:false},
+            {piece:"rook", key:7, team:"black", pinned:false, moved:false},
 
             {piece:"pawn", key:8, team:"black", pinned:false, moved:false, doublejumped: -1},
             {piece:"pawn", key:9, team:"black", pinned:false, moved:false, doublejumped: -1},
@@ -41,14 +41,14 @@ export class Board extends React.Component {
             {piece:"pawn", key:54, team:"white", pinned:false, moved:false, doublejumped: -1},
             {piece:"pawn", key:55, team:"white", pinned:false, moved:false, doublejumped: -1},
 
-            {piece:"rook", key:56, team:"white", pinned:false},
+            {piece:"rook", key:56, team:"white", pinned:false, moved:false},
             {piece:"knight", key:57, team:"white", pinned:false},
             {piece:"bishop", key:58, team:"white", pinned:false},
             {piece:"queen", key:59, team:"white", pinned:false},
-            {piece:"king", key:60, team:"white", pinned:false},
+            {piece:"king", key:60, team:"white", pinned:false, moved:false},
             {piece:"bishop", key:61, team:"white", pinned:false},
             {piece:"knight", key:62, team:"white", pinned:false},
-            {piece:"rook", key:63, team:"white", pinned:false},
+            {piece:"rook", key:63, team:"white", pinned:false, moved:false},
         ] 
 
         for(let i = 0; i < startingPieces.length; i++){
@@ -107,8 +107,8 @@ export class Board extends React.Component {
         }
 
         if(pieceMove.piece === "king"){
-            if(!this.checkValidKing(from, to)) return;
-            kingsSquare = to;
+            this.checkValidKing(from, to)
+            return
         }
 
         if(pieceMove.piece === "pawn"){
@@ -352,12 +352,45 @@ export class Board extends React.Component {
 
     checkValidKing(start, stop){
         let board = this.state.board;
-        if (board[stop] === 'em') {
-            if (kingMoves[start].includes(stop)) {
-                return true
+        if((board[stop] === "em" || board[stop].team != board[start].team) && kingMoves[start].includes(stop)) {
+            board[stop] = board[start]
+            board[start] = 'em'
+        } 
+
+        else if (board[stop].team === board[start].team && board[stop].piece === 'rook' && !board[stop].moved && !board[start].moved) {
+            if (board[start].team === 'black') {
+                if (start - stop > 0 && board[1] === 'em' && board[2] === 'em' && board[3] === 'em') {
+                    board[1] = board[start]
+                    board[2] = board[stop]
+                    board[stop] = 'em'
+                    board[start] = 'em'
+                }
+
+                else if (start - stop < 0 && board[6] === 'em' && board[5] === 'em') {
+                    board[6] = board[start]
+                    board[5] = board[stop]
+                    board[stop] = 'em'
+                    board[start] = 'em'
+                }
+            }
+
+            else if (board[start].team === 'white') {
+                if (start - stop > 0 && board[59] === 'em' && board[58] === 'em' && board[57] === 'em') {
+                    board[57] = board[start]
+                    board[58] = board[stop]
+                    board[stop] = 'em'
+                    board[start] = 'em'
+                }
+
+                else if (start - stop < 0 && board[62] === 'em' && board[61] === 'em') {
+                    board[62] = board[start]
+                    board[61] = board[stop]
+                    board[stop] = 'em'
+                    board[start] = 'em'
+                }
             }
         }
-
+        this.setState({board:board})
         return false
     }
 
