@@ -130,7 +130,6 @@ export class Board extends React.Component {
             pieceMove.moved = true;
         }
 
-
         fakeBoard[from] = "em";
         fakeBoard[to] = pieceMove;
 
@@ -325,7 +324,6 @@ export class Board extends React.Component {
         for(let i = 0; i < knightMoves[kingSquare].length; i++){
             let pieceToCheck = board[knightMoves[kingSquare][i]]
             if(pieceToCheck !== "em" && pieceToCheck.team != kingTeam && pieceToCheck.piece === "knight"){
-
                 return false
             }
         }
