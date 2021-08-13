@@ -73,12 +73,14 @@ export class Board extends React.Component {
         let oldBoardState = this.state.board;
         let pieceMove = fakeBoard[from];
         
+        
         if(this.state.whitesTurn){
             if(pieceMove.team === "black") return;
         }
         else if(!this.state.whitesTurn){
             if(pieceMove.team === "white") return;
         }
+        
         
         let kingsSquare = 0;
         let teamMoving = "black";
@@ -106,9 +108,42 @@ export class Board extends React.Component {
             if(!this.checkValidRookBishopQueen(from, to, 'queen')) return;
         }
 
+        let changePositions = true;
         if(pieceMove.piece === "king"){
-            this.checkValidKing(from, to)
-            return
+            let board = fakeBoard
+            let kingsMove = this.checkValidKing(from, to);
+            changePositions = false;
+
+            if(kingsMove === "black left"){
+                board[1] = board[from]
+                board[2] = board[to]
+                board[from] = 'em'
+                board[to] = 'em'
+            }
+            if(kingsMove === "black right"){
+                board[6] = board[from]
+                board[5] = board[to]
+                board[to] = 'em'
+                board[from] = 'em'
+            }
+            if(kingsMove == "white left"){
+                board[57] = board[from]
+                board[58] = board[to]
+                board[from] = 'em'
+                board[to] = 'em'
+            }
+            if(kingsMove == "white right"){
+                board[62] = board[from]
+                board[61] = board[to]
+                board[to] = 'em'
+                board[from] = 'em'
+            }
+            if(!kingsMove) return;
+            if(kingsMove === true){ 
+                changePositions = true;
+            }
+            
+            kingsSquare = to;
         }
 
         if(pieceMove.piece === "pawn"){
@@ -129,16 +164,19 @@ export class Board extends React.Component {
 
             pieceMove.moved = true;
         }
-
+        
+        if(changePositions){
         fakeBoard[from] = "em";
         fakeBoard[to] = pieceMove;
+        }
 
         if(!this.checkLegal(kingsSquare, teamMoving, fakeBoard)){
             this.setState({"board":oldBoardState});
             return;
         }
 
-        let currentTurn = this.state.turnNum
+        let currentTurn = this.state.turnNum;
+        console.log("asd");
         this.setState(prevState => {
             return({
             "board": fakeBoard,
@@ -292,7 +330,6 @@ export class Board extends React.Component {
         //makes the king pretend to be every piece in the game, and checks if it can run into the piece its imitating
         //first checks for sliding pieces
 
-        console.log("asd")
         let possibleLines = queenMoves[kingSquare];
         let board = boardState;
         for(let i = 0; i < 4; i++){
@@ -353,50 +390,37 @@ export class Board extends React.Component {
     checkValidKing(start, stop){
         let board = this.state.board;
         if((board[stop] === "em" || board[stop].team != board[start].team) && kingMoves[start].includes(stop)) {
-            board[stop] = board[start]
-            board[start] = 'em'
+            return true;
         } 
 
         else if (board[stop].team === board[start].team && board[stop].piece === 'rook' && !board[stop].moved && !board[start].moved) {
             if (board[start].team === 'black') {
                 if (start - stop > 0 && board[1] === 'em' && board[2] === 'em' && board[3] === 'em') {
-                    board[1] = board[start]
-                    board[2] = board[stop]
-                    board[stop] = 'em'
-                    board[start] = 'em'
+                    return "black left"
                 }
 
                 else if (start - stop < 0 && board[6] === 'em' && board[5] === 'em') {
-                    board[6] = board[start]
-                    board[5] = board[stop]
-                    board[stop] = 'em'
-                    board[start] = 'em'
+                    return "black right"
                 }
             }
 
             else if (board[start].team === 'white') {
                 if (start - stop > 0 && board[59] === 'em' && board[58] === 'em' && board[57] === 'em') {
-                    board[57] = board[start]
-                    board[58] = board[stop]
-                    board[stop] = 'em'
-                    board[start] = 'em'
+                    return "white left";
                 }
 
                 else if (start - stop < 0 && board[62] === 'em' && board[61] === 'em') {
-                    board[62] = board[start]
-                    board[61] = board[stop]
-                    board[stop] = 'em'
-                    board[start] = 'em'
+                    return "white right"
                 }
             }
         }
-        this.setState({board:board})
         return false
     }
 
 
     render() {
         let entireBoard = [];
+        console.log(this.state);
 
         for(let i = 0; i < 8; i ++){
             let currentRow = [];
