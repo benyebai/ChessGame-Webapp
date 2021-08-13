@@ -250,9 +250,11 @@ export class Board extends React.Component {
                     return false
                 }
             }
-        } 
+            return true;
+        }
+        return false;
 
-        return true
+        
     }
 
     checkValidPawn(start, stop){
