@@ -3,6 +3,8 @@ import { ChessPiece } from './chessPiece';
 import { Square } from './square';
 import { knightMoves, rookMoves, bishopMoves, queenMoves, kingMoves } from './precomputedData';
 import { CustomDragLayer } from './customDrag';
+import { Promotion } from './promotion';
+import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
 
 export class Board extends React.Component {
     constructor(props){
@@ -52,20 +54,19 @@ export class Board extends React.Component {
         ] 
 
         for(let i = 0; i < startingPieces.length; i++){
-            
             fakeBoard[startingPieces[i]["key"]] = startingPieces[i];
         }
-
-        console.log(fakeBoard)
 
         this.state = {
             board:fakeBoard,
             turnNum:1,
-            whitesTurn: true
+            whitesTurn: true,
+            choosingPromotion : -1
         }
 
         this.movePiece = this.movePiece.bind(this);
         this.genValidMovesKnight = this.genValidMovesKnight.bind(this);
+        this.promotePawn = this.promotePawn.bind(this);
     }
 
     movePiece(from, to){
@@ -73,7 +74,7 @@ export class Board extends React.Component {
         let oldBoardState = JSON.parse(JSON.stringify(this.state.board));
         let pieceMove = fakeBoard[from];
         
-        
+        if(this.state.choosingPromotion > 0) return;
         if(this.state.whitesTurn){
             if(pieceMove.team === "black") return;
         }
@@ -163,6 +164,19 @@ export class Board extends React.Component {
             else return;
 
             pieceMove.moved = true;
+
+            if((-1 < to && to < 8) || (54 < to && to < 64)){
+                console.log("asdasd");
+                fakeBoard[from] = "em";
+                fakeBoard[to] = pieceMove;
+                this.setState({
+                    "board": fakeBoard,
+                    choosingPromotion : to
+                });
+                return;
+
+            }
+
         }
         
         if(changePositions){
@@ -170,17 +184,13 @@ export class Board extends React.Component {
         fakeBoard[to] = pieceMove;
         }
 
-        console.log(this.checkLegal(kingsSquare, teamMoving, fakeBoard));
-
         if(!this.checkLegal(kingsSquare, teamMoving, fakeBoard)){
-            console.log(oldBoardState)
-            console.log(this.state.board);
             this.setState({"board":oldBoardState});
             return;
         }
 
         let currentTurn = this.state.turnNum;
-        console.log("asd");
+        
         this.setState(prevState => {
             return({
             "board": fakeBoard,
@@ -423,10 +433,28 @@ export class Board extends React.Component {
         return false
     }
 
+    promotePawn(what){
+        //what is what you want the pawn to be
+
+        let fakeBoard = this.state.board;
+        fakeBoard[this.state.choosingPromotion].piece = what;
+
+        console.log(this.state);
+
+        //functions also does the things that the movepiece didnt do since promoting a pawn pauses the game
+        this.setState(prevState => {
+            return({
+            "board": fakeBoard,
+            turnNum: prevState.turnNum + 1,
+            whitesTurn : !prevState.whitesTurn,
+            choosingPromotion : -1
+            });
+        });
+    }
+
 
     render() {
         let entireBoard = [];
-        console.log(this.state);
 
         for(let i = 0; i < 8; i ++){
             let currentRow = [];
@@ -435,6 +463,17 @@ export class Board extends React.Component {
 
                 if(this.state.board[(i * 8) + j] === "em"){
                     currentRow.push(<Square props = {squareProps} />);
+                }
+                else if(this.state.choosingPromotion === (i * 8) + j){
+                    currentRow.push(
+                    <Square props = {squareProps} >
+                        <Promotion 
+                            promoteFunc = {this.promotePawn}
+                            team = {this.state.board[(i * 8) + j].team}
+                            whichWay = {((i * 8) + j) < 8 ? "down" : "up"}
+                        />
+                    </Square>
+                    );
                 }
                 else{
                     currentRow.push(
