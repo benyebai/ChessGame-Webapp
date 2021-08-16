@@ -72,6 +72,8 @@ export class Board extends React.Component {
         let fakeBoard = this.state.board;
         let oldBoardState = this.state.board;
         let pieceMove = fakeBoard[from];
+
+        let kingOrNot = false
         
         if(this.state.whitesTurn){
             if(pieceMove.team === "black") return;
@@ -130,9 +132,11 @@ export class Board extends React.Component {
             pieceMove.moved = true;
         }
 
-
+        
         fakeBoard[from] = "em";
         fakeBoard[to] = pieceMove;
+        
+        
 
         if(!this.checkLegal(kingsSquare, teamMoving, fakeBoard)){
             this.setState({"board":oldBoardState});
@@ -192,6 +196,9 @@ export class Board extends React.Component {
 
         let board = this.state.board;
         let where = []
+
+        
+
         if(board[stop] === "em" || board[stop].team != board[start].team){ 
 
             // finding where the stop is located within the precomputed data
@@ -213,9 +220,12 @@ export class Board extends React.Component {
                     return false
                 }
             }
+            return true
         } 
 
-        return true
+        return false
+
+        
     }
 
     checkValidPawn(start, stop){
@@ -393,7 +403,7 @@ export class Board extends React.Component {
             }
         }
         this.setState({board:board})
-        return false
+        
     }
 
 
