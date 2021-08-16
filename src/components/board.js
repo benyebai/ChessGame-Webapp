@@ -3,6 +3,8 @@ import { ChessPiece } from './chessPiece';
 import { Square } from './square';
 import { knightMoves, rookMoves, bishopMoves, queenMoves, kingMoves } from './precomputedData';
 import { CustomDragLayer } from './customDrag';
+import { Promotion } from './promotion';
+import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
 
 export class Board extends React.Component {
     constructor(props){
@@ -52,35 +54,36 @@ export class Board extends React.Component {
         ] 
 
         for(let i = 0; i < startingPieces.length; i++){
-            
             fakeBoard[startingPieces[i]["key"]] = startingPieces[i];
         }
-
-        console.log(fakeBoard)
 
         this.state = {
             board:fakeBoard,
             turnNum:1,
-            whitesTurn: true
+            whitesTurn: true,
+            choosingPromotion : -1
         }
 
         this.movePiece = this.movePiece.bind(this);
         this.genValidMovesKnight = this.genValidMovesKnight.bind(this);
+        this.promotePawn = this.promotePawn.bind(this);
     }
 
     movePiece(from, to){
         let fakeBoard = this.state.board;
-        let oldBoardState = this.state.board;
+        let oldBoardState = JSON.parse(JSON.stringify(this.state.board));
         let pieceMove = fakeBoard[from];
 
         let kingOrNot = false
         
+        if(this.state.choosingPromotion > 0) return;
         if(this.state.whitesTurn){
             if(pieceMove.team === "black") return;
         }
         else if(!this.state.whitesTurn){
             if(pieceMove.team === "white") return;
         }
+        
         
         let kingsSquare = 0;
         let teamMoving = "black";
@@ -108,9 +111,42 @@ export class Board extends React.Component {
             if(!this.checkValidRookBishopQueen(from, to, 'queen')) return;
         }
 
+        let changePositions = true;
         if(pieceMove.piece === "king"){
-            this.checkValidKing(from, to)
-            return
+            let board = fakeBoard
+            let kingsMove = this.checkValidKing(from, to);
+            changePositions = false;
+
+            if(kingsMove === "black left"){
+                board[2] = board[from]
+                board[3] = board[to]
+                board[from] = 'em'
+                board[to] = 'em'
+            }
+            if(kingsMove === "black right"){
+                board[6] = board[from]
+                board[5] = board[to]
+                board[to] = 'em'
+                board[from] = 'em'
+            }
+            if(kingsMove == "white left"){
+                board[58] = board[from]
+                board[59] = board[to]
+                board[from] = 'em'
+                board[to] = 'em'
+            }
+            if(kingsMove == "white right"){
+                board[62] = board[from]
+                board[61] = board[to]
+                board[to] = 'em'
+                board[from] = 'em'
+            }
+            if(!kingsMove) return;
+            if(kingsMove === true){ 
+                changePositions = true;
+            }
+            
+            kingsSquare = to;
         }
 
         if(pieceMove.piece === "pawn"){
@@ -130,20 +166,33 @@ export class Board extends React.Component {
             else return;
 
             pieceMove.moved = true;
-        }
 
+            if((-1 < to && to < 8) || (54 < to && to < 64)){
+                console.log("asdasd");
+                fakeBoard[from] = "em";
+                fakeBoard[to] = pieceMove;
+                this.setState({
+                    "board": fakeBoard,
+                    choosingPromotion : to
+                });
+                return;
+
+            }
+
+        }
         
+        if(changePositions){
         fakeBoard[from] = "em";
         fakeBoard[to] = pieceMove;
-        
-        
+        }
 
         if(!this.checkLegal(kingsSquare, teamMoving, fakeBoard)){
             this.setState({"board":oldBoardState});
             return;
         }
 
-        let currentTurn = this.state.turnNum
+        let currentTurn = this.state.turnNum;
+        
         this.setState(prevState => {
             return({
             "board": fakeBoard,
@@ -220,10 +269,9 @@ export class Board extends React.Component {
                     return false
                 }
             }
-            return true
-        } 
-
-        return false
+            return true;
+        }
+        return false;
 
         
     }
@@ -303,7 +351,6 @@ export class Board extends React.Component {
         //makes the king pretend to be every piece in the game, and checks if it can run into the piece its imitating
         //first checks for sliding pieces
 
-        console.log("asd")
         let possibleLines = queenMoves[kingSquare];
         let board = boardState;
         for(let i = 0; i < 4; i++){
@@ -335,7 +382,6 @@ export class Board extends React.Component {
         for(let i = 0; i < knightMoves[kingSquare].length; i++){
             let pieceToCheck = board[knightMoves[kingSquare][i]]
             if(pieceToCheck !== "em" && pieceToCheck.team != kingTeam && pieceToCheck.piece === "knight"){
-
                 return false
             }
         }
@@ -365,45 +411,50 @@ export class Board extends React.Component {
     checkValidKing(start, stop){
         let board = this.state.board;
         if((board[stop] === "em" || board[stop].team != board[start].team) && kingMoves[start].includes(stop)) {
-            board[stop] = board[start]
-            board[start] = 'em'
+            return true;
         } 
 
         else if (board[stop].team === board[start].team && board[stop].piece === 'rook' && !board[stop].moved && !board[start].moved) {
             if (board[start].team === 'black') {
                 if (start - stop > 0 && board[1] === 'em' && board[2] === 'em' && board[3] === 'em') {
-                    board[1] = board[start]
-                    board[2] = board[stop]
-                    board[stop] = 'em'
-                    board[start] = 'em'
+                    return "black left"
                 }
 
                 else if (start - stop < 0 && board[6] === 'em' && board[5] === 'em') {
-                    board[6] = board[start]
-                    board[5] = board[stop]
-                    board[stop] = 'em'
-                    board[start] = 'em'
+                    return "black right"
                 }
             }
 
             else if (board[start].team === 'white') {
                 if (start - stop > 0 && board[59] === 'em' && board[58] === 'em' && board[57] === 'em') {
-                    board[57] = board[start]
-                    board[58] = board[stop]
-                    board[stop] = 'em'
-                    board[start] = 'em'
+                    return "white left";
                 }
 
                 else if (start - stop < 0 && board[62] === 'em' && board[61] === 'em') {
-                    board[62] = board[start]
-                    board[61] = board[stop]
-                    board[stop] = 'em'
-                    board[start] = 'em'
+                    return "white right"
                 }
             }
         }
-        this.setState({board:board})
-        
+        return false
+    }
+
+    promotePawn(what){
+        //what is what you want the pawn to be
+
+        let fakeBoard = this.state.board;
+        fakeBoard[this.state.choosingPromotion].piece = what;
+
+        console.log(this.state);
+
+        //functions also does the things that the movepiece didnt do since promoting a pawn pauses the game
+        this.setState(prevState => {
+            return({
+            "board": fakeBoard,
+            turnNum: prevState.turnNum + 1,
+            whitesTurn : !prevState.whitesTurn,
+            choosingPromotion : -1
+            });
+        });
     }
 
 
@@ -417,6 +468,17 @@ export class Board extends React.Component {
 
                 if(this.state.board[(i * 8) + j] === "em"){
                     currentRow.push(<Square props = {squareProps} />);
+                }
+                else if(this.state.choosingPromotion === (i * 8) + j){
+                    currentRow.push(
+                    <Square props = {squareProps} >
+                        <Promotion 
+                            promoteFunc = {this.promotePawn}
+                            team = {this.state.board[(i * 8) + j].team}
+                            whichWay = {((i * 8) + j) < 8 ? "down" : "up"}
+                        />
+                    </Square>
+                    );
                 }
                 else{
                     currentRow.push(
