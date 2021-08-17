@@ -12,6 +12,7 @@ export function checkPinned(board, kingPos, team) {
     
     for (let i = 0; i < 4; i++) {
         let found = null
+        let foundPos = null
         for (let j = 0; j < lineOfSight[i].length; j++) {
 
             if (found != null && boardCopy[lineOfSight[i][j]].team === team) {
@@ -31,7 +32,10 @@ export function checkPinned(board, kingPos, team) {
 
                 redSpots.push(lineOfSight[i][j])
                 
-                pin[found.piece] = redSpots
+                pin['piece'] = found.piece
+                pin['available'] = redSpots
+                pin['position'] = foundPos 
+                pin['team'] = team
                 pinned.push(pin)
 
 
@@ -41,6 +45,7 @@ export function checkPinned(board, kingPos, team) {
             
             else if (boardCopy[lineOfSight[i][j]].team === team && found === null) {
                 found = boardCopy[lineOfSight[i][j]]
+                foundPos = lineOfSight[i][j]
             }
 
            
