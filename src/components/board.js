@@ -5,6 +5,7 @@ import { knightMoves, rookMoves, bishopMoves, queenMoves, kingMoves } from './pr
 import { CustomDragLayer } from './customDrag';
 import { Promotion } from './promotion';
 import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
+import { generateAllLegal } from './moveGenerator';
 
 export class Board extends React.Component {
     constructor(props){
@@ -70,17 +71,21 @@ export class Board extends React.Component {
     }
 
     movePiece(from, to){
+        generateAllLegal(this.state.board, "white");
+
         let fakeBoard = this.state.board;
         let oldBoardState = JSON.parse(JSON.stringify(this.state.board));
         let pieceMove = fakeBoard[from];
         
         if(this.state.choosingPromotion > 0) return;
+        
         if(this.state.whitesTurn){
             if(pieceMove.team === "black") return;
         }
         else if(!this.state.whitesTurn){
             if(pieceMove.team === "white") return;
         }
+        
         
         
         let kingsSquare = 0;
@@ -92,7 +97,7 @@ export class Board extends React.Component {
                 kingsSquare = i;
             }
         }
-
+        
         if(pieceMove.piece === "knight"){
             if(!this.checkValidKnight(from, to)) return;
         }
@@ -108,6 +113,7 @@ export class Board extends React.Component {
         if(pieceMove.piece === "queen"){
             if(!this.checkValidRookBishopQueen(from, to, 'queen')) return;
         }
+        
 
         let changePositions = true;
         if(pieceMove.piece === "king"){
