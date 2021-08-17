@@ -236,4 +236,4 @@ for (let x = 0; x < 64; x++) {
 
 }
 
-console.log(kingMoves)
+console.log(queenMoves)

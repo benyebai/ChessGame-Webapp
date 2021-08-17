@@ -5,6 +5,7 @@ import { knightMoves, rookMoves, bishopMoves, queenMoves, kingMoves } from './pr
 import { CustomDragLayer } from './customDrag';
 import { Promotion } from './promotion';
 import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
+import { checkPinned } from './checkPinned';
 import { generateAllLegal } from './moveGenerator';
 
 export class Board extends React.Component {
@@ -71,11 +72,13 @@ export class Board extends React.Component {
     }
 
     movePiece(from, to){
-        generateAllLegal(this.state.board, "white");
+        console.log(generateAllLegal(this.state.board, "white", this.state.turnNum));
 
         let fakeBoard = this.state.board;
         let oldBoardState = JSON.parse(JSON.stringify(this.state.board));
         let pieceMove = fakeBoard[from];
+
+        let kingOrNot = false
         
         if(this.state.choosingPromotion > 0) return;
         
@@ -204,6 +207,8 @@ export class Board extends React.Component {
             whitesTurn : !prevState.whitesTurn
             });
         });
+
+        checkPinned(this.state.board, 4, 'black')
     }
 
     genValidMovesKnight(pos){
@@ -249,6 +254,9 @@ export class Board extends React.Component {
 
         let board = this.state.board;
         let where = []
+
+        
+
         if(board[stop] === "em" || board[stop].team != board[start].team){ 
 
             // finding where the stop is located within the precomputed data
