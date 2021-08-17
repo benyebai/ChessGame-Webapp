@@ -5,6 +5,7 @@ import { knightMoves, rookMoves, bishopMoves, queenMoves, kingMoves } from './pr
 import { CustomDragLayer } from './customDrag';
 import { Promotion } from './promotion';
 import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
+import { checkPinned } from './checkPinned';
 
 export class Board extends React.Component {
     constructor(props){
@@ -200,6 +201,8 @@ export class Board extends React.Component {
             whitesTurn : !prevState.whitesTurn
             });
         });
+
+        checkPinned(this.state.board, 4, 'black')
     }
 
     genValidMovesKnight(pos){
