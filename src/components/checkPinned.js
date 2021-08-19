@@ -96,13 +96,6 @@ export function checkPinned(board, kingPos, team) {
         }
     }
 
-
-    
-    
-
-
-    console.log(pinned)
-
     return pinned
 }
 

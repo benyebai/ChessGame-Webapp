@@ -7,6 +7,9 @@ import { Promotion } from './promotion';
 import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
 import { checkPinned } from './checkPinned';
 import { generateAllLegal } from './moveGenerator';
+import { io } from 'socket.io-client';
+
+var socket = io("http://localhost:3333/");
 
 export class Board extends React.Component {
     constructor(props){
@@ -78,7 +81,7 @@ export class Board extends React.Component {
         let oldBoardState = JSON.parse(JSON.stringify(this.state.board));
         let pieceMove = fakeBoard[from];
 
-        let kingOrNot = false
+        let kingOrNot = false;
         
         if(this.state.choosingPromotion > 0) return;
         
@@ -93,7 +96,7 @@ export class Board extends React.Component {
         
         let kingsSquare = 0;
         let teamMoving = "black";
-        if(this.state.whitesTurn) teamMoving = "white"
+        if(this.state.whitesTurn) teamMoving = "white";
 
         for(let i = 0; i < 64; i++){
             if(fakeBoard[i].piece === "king" && fakeBoard[i].team == teamMoving){
@@ -208,6 +211,7 @@ export class Board extends React.Component {
             });
         });
 
+        socket.emit("lmao", {"board":this.state.board});
         checkPinned(this.state.board, 4, 'black')
     }
 
@@ -466,6 +470,12 @@ export class Board extends React.Component {
         });
     }
 
+    componentWillMount() {
+        socket.on("board", (data) => {
+            console.log(data);
+            this.setState(data);
+        });
+    }
 
     render() {
         let entireBoard = [];
