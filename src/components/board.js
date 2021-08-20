@@ -15,6 +15,8 @@ export class Board extends React.Component {
     constructor(props){
         super(props);
 
+        socket.emit("joinRoom", this.props.match.params.id);
+
         let fakeBoard = [];
         for(let i = 0; i < 64; i++){
             fakeBoard.push("em");
@@ -212,6 +214,7 @@ export class Board extends React.Component {
         });
 
         socket.emit("lmao", {"board":this.state.board});
+        socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state})
         checkPinned(this.state.board, 4, 'black')
     }
 
@@ -471,7 +474,14 @@ export class Board extends React.Component {
     }
 
     componentWillMount() {
+        /*
         socket.on("board", (data) => {
+            console.log(data);
+            this.setState(data);
+        });
+        */
+       
+        socket.on("changeState", (data) => {
             console.log(data);
             this.setState(data);
         });
