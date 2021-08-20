@@ -10,12 +10,19 @@ import { generateAllLegal } from './moveGenerator';
 import { io } from 'socket.io-client';
 
 var socket = io("http://localhost:3333/");
+var alreadyJoined = false;
 
 export class Board extends React.Component {
     constructor(props){
         super(props);
 
-        socket.emit("joinRoom", this.props.match.params.id);
+        if(!alreadyJoined){
+            socket.emit("joinRoom", this.props.match.params.id, "white", (returnData) => {
+                console.log(returnData);
+            });
+
+            alreadyJoined = true;
+        }
 
         let fakeBoard = [];
         for(let i = 0; i < 64; i++){
@@ -480,7 +487,7 @@ export class Board extends React.Component {
             this.setState(data);
         });
         */
-       
+
         socket.on("changeState", (data) => {
             console.log(data);
             this.setState(data);

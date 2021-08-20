@@ -5,7 +5,7 @@ const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 
-var rooms = [];
+var roomIds = {};
 
 const io = new Server(server, {
   cors: {
@@ -22,20 +22,64 @@ app.post("/checkRoom", (req, res) => {
 });
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
 
-  socket.on("lmao", (fuck) => {
-    console.log("im so fuckiong cool");
-    io.emit("board", fuck);
+  socket.on("joinRoom", (roomName, team, res) => {
+
+    if(roomIds[roomName] == null){
+      console.log("you suck");
+      res("nonexistent");
+    }
+    else if(!roomIds[roomName].white || !roomIds[roomName].black){
+
+      let teamJoined = team;
+
+      if(!roomIds[roomName][team]) roomIds[roomName][team] = true;
+      else{
+
+        if(team === "white"){
+          roomIds[roomName].black = true;
+          teamJoined = "black";
+        }
+        else{
+          roomIds[roomName].white = true;
+          teamJoined = "white";
+        }
+
+      }
+
+      socket.join(roomName);
+      res("joined " + teamJoined);
+    }
+    else{
+      res("room full");
+    }
+
   });
 
-  socket.on("joinRoom", (roomName) => {
-    socket.join(roomName);
-    console.log(roomName);
+  socket.on("createRoom", (roomName, res) => {
+
+    if(roomIds[roomName] == null){
+      roomIds[roomName] = {white:false, black:false}
+      res("success");
+    }
+    else{
+      res("try again");
+    }
+
   });
 
-  socket.on('disconnect', () => {
-    console.log("asd");
+  socket.on('disconnecting', () => {
+    if(roomIds[socket.rooms] != null){
+      console.log(roomIds[socket.rooms]);
+      //so far, you are just not allowed to reconnect
+
+      if(!roomIds[socket.rooms].white){
+        roomIds[socket.rooms] = null;
+        return;
+      }
+
+      roomIds[socket.rooms].white = false;
+    }
   });
 
   socket.on("sendInfo", (info) => {
