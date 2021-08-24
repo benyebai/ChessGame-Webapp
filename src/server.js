@@ -24,14 +24,8 @@ app.post("/checkRoom", (req, res) => {
 io.on('connection', (socket) => {
   console.log('a user connected');
 
-  socket.on("lmao", (fuck) => {
-    console.log("im so fuckiong cool");
-    io.emit("board", fuck);
-  });
-
   socket.on("joinRoom", (roomName) => {
     socket.join(roomName);
-    console.log(roomName);
   });
 
   socket.on('disconnect', () => {
