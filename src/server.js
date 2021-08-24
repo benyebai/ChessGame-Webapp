@@ -24,10 +24,11 @@ app.post("/checkRoom", (req, res) => {
 io.on('connection', (socket) => {
 
   socket.on("joinRoom", (roomName, team, res) => {
+    console.log("asd");
 
     if(roomIds[roomName] == null){
-      console.log("you suck");
       res("nonexistent");
+      return;
     }
     else if(!roomIds[roomName].white || !roomIds[roomName].black){
 
@@ -37,22 +38,25 @@ io.on('connection', (socket) => {
       else{
 
         if(team === "white"){
-          roomIds[roomName].black = true;
+          roomIds[roomName].black = socket.id;
           teamJoined = "black";
         }
         else{
-          roomIds[roomName].white = true;
+          roomIds[roomName].white = socket.id;
           teamJoined = "white";
         }
-
       }
 
       socket.join(roomName);
+
       res("joined " + teamJoined);
     }
     else{
       res("room full");
     }
+
+    //count number of players in room based on roomIds.roomname and how many whites+blqacks there are
+
 
   });
 
@@ -70,15 +74,18 @@ io.on('connection', (socket) => {
 
   socket.on('disconnecting', () => {
     if(roomIds[socket.rooms] != null){
-      console.log(roomIds[socket.rooms]);
-      //so far, you are just not allowed to reconnect
+      
 
-      if(!roomIds[socket.rooms].white){
+      if(roomIds[socket.rooms].white === socket.id) roomIds[socket.rooms].white = false;
+      else if(roomIds[socket.rooms].black === socket.id) roomIds[socket.rooms].black = false;
+
+      console.log(roomIds[socket.rooms])
+
+      if(!roomIds[socket.rooms].white && !roomIds[socket.rooms].black){
         roomIds[socket.rooms] = null;
         return;
       }
-
-      roomIds[socket.rooms].white = false;
+      
     }
   });
 

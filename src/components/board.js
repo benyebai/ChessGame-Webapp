@@ -1,28 +1,26 @@
 import React from 'react';
 import { ChessPiece } from './chessPiece';
 import { Square } from './square';
-import { knightMoves, rookMoves, bishopMoves, queenMoves, kingMoves } from './precomputedData';
+import { knightMoves, rookMoves, bishopMoves, queenMoves, kingMoves } from './boardLogic/precomputedData';
 import { CustomDragLayer } from './customDrag';
 import { Promotion } from './promotion';
 import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
-import { checkPinned } from './checkPinned';
-import { generateAllLegal } from './moveGenerator';
+import { checkPinned } from './boardLogic/checkPinned';
+import { generateAllLegal } from './boardLogic/moveGenerator';
 import { io } from 'socket.io-client';
+import WaitForOther from './waitForOther.js';
 
 var socket = io("http://localhost:3333/");
 var alreadyJoined = false;
+var everyoneIn = false;
+var roomFull = false;
+var roomNonexist = false;
+var finishedJoining = false;
 
 export class Board extends React.Component {
+
     constructor(props){
         super(props);
-
-        if(!alreadyJoined){
-            socket.emit("joinRoom", this.props.match.params.id, "white", (returnData) => {
-                console.log(returnData);
-            });
-
-            alreadyJoined = true;
-        }
 
         let fakeBoard = [];
         for(let i = 0; i < 64; i++){
@@ -75,7 +73,8 @@ export class Board extends React.Component {
             board:fakeBoard,
             turnNum:1,
             whitesTurn: true,
-            choosingPromotion : -1
+            choosingPromotion : -1,
+            "roomFull" : roomFull
         }
 
         this.movePiece = this.movePiece.bind(this);
@@ -488,13 +487,68 @@ export class Board extends React.Component {
         });
         */
 
+        if(!alreadyJoined){
+
+            alreadyJoined = true;
+
+            socket.emit("joinRoom", this.props.match.params.id, "white", (returnData) =>{
+                finishedJoining = true;
+
+                if(returnData == "room full"){
+                    roomFull = true;
+                }
+                else if(returnData == "nonexistent"){
+                    roomNonexist = true;
+                }
+                else if(returnData == "joined black"){
+
+                }
+                else if(returnData == "joined white"){
+                    
+                }
+
+                this.forceUpdate();  
+            });
+        }
+
+
+
         socket.on("changeState", (data) => {
-            console.log(data);
             this.setState(data);
+        });
+
+        socket.on("playerJoined", (data) => {
+            if(data.players == 2){
+                everyoneIn = true;
+                this.forceUpdate();
+            }
         });
     }
 
     render() {
+        console.log(finishedJoining);
+        if(!finishedJoining) return(
+            <div></div>
+        );
+        if(roomFull){
+            console.log("asdasdasdasdasdasdasdasd");
+            return (
+                <h1>room is full</h1>
+            )
+        }
+        else if(roomNonexist){
+            console.log("asdasdasdasdasdasdasdasd");
+            return (
+                <h1>room doesn't exist</h1>
+            )
+        }
+
+        else if(!everyoneIn){
+            return (
+                <WaitForOther />
+            );
+        }
+
         let entireBoard = [];
 
         for(let i = 0; i < 8; i ++){
