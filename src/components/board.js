@@ -21,7 +21,11 @@ export class Board extends React.Component {
 
     constructor(props){
         super(props);
-        console.log(this.props);
+        if(this.props.gamemode === "local" || this.props.gamemode === "ai"){
+            finishedJoining = true;
+            alreadyJoined = true;
+            everyoneIn = true;
+        }
 
         let fakeBoard = [];
         for(let i = 0; i < 64; i++){
@@ -84,7 +88,6 @@ export class Board extends React.Component {
     }
 
     movePiece(from, to){
-        console.log([from, to]);
         if(this.state.myTeam === "black"){
             from = 63 - from;
             to = 63 - to;
@@ -190,7 +193,6 @@ export class Board extends React.Component {
             pieceMove.moved = true;
 
             if((-1 < to && to < 8) || (54 < to && to < 64)){
-                console.log("asdasd");
                 fakeBoard[from] = "em";
                 fakeBoard[to] = pieceMove;
                 this.setState({
@@ -198,7 +200,6 @@ export class Board extends React.Component {
                     choosingPromotion : to
                 });
                 return;
-
             }
 
         }
@@ -468,8 +469,6 @@ export class Board extends React.Component {
         let fakeBoard = this.state.board;
         fakeBoard[this.state.choosingPromotion].piece = what;
 
-        console.log(this.state);
-
         //due to the nature of setstate being an async functions, i cant rely on it finishing before the socket emit runs
         //because of that i change what i need to over here first before changing state
         let fakeState = this.state;
@@ -489,8 +488,6 @@ export class Board extends React.Component {
             choosingPromotion : -1
             });
         });
-
-       
     }
 
     componentWillMount() {

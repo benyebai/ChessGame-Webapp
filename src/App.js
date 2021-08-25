@@ -18,6 +18,8 @@ class App extends React.Component {
           <div>
             <Switch>
               <Route exact path="/game/:id" render={(props) => (<Board {...props} gamemode = "multiplayer"/>)} />
+              <Route exact path="/local" render={(props) => (<Board {...props} gamemode = "local"/>)} />
+              <Route exact path="/ai" render={(props) => (<Board {...props} gamemode = "ai"/>)} />
               <Route exact path="/" component = {Menu} />
             </Switch>
           </div>
