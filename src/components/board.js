@@ -21,6 +21,7 @@ export class Board extends React.Component {
 
     constructor(props){
         super(props);
+        console.log(this.props);
 
         let fakeBoard = [];
         for(let i = 0; i < 64; i++){
@@ -74,6 +75,7 @@ export class Board extends React.Component {
             turnNum:1,
             whitesTurn: true,
             choosingPromotion : -1,
+            gamemode: this.props.gamemode
         }
 
         this.movePiece = this.movePiece.bind(this);
@@ -95,6 +97,7 @@ export class Board extends React.Component {
         let kingOrNot = false;
         
         if(this.state.choosingPromotion > 0) return;
+        if(this.state.gamemode === "multiplayer" && this.state.board[from].team !== this.state.myTeam) return;
         
         if(this.state.whitesTurn){
             if(pieceMove.team === "black") return;
@@ -467,6 +470,16 @@ export class Board extends React.Component {
 
         console.log(this.state);
 
+        //due to the nature of setstate being an async functions, i cant rely on it finishing before the socket emit runs
+        //because of that i change what i need to over here first before changing state
+        let fakeState = this.state;
+        fakeState.board = fakeBoard;
+        fakeState.turnNum = this.state.turnNum + 1
+        fakeState.whitesTurn = !this.state.whitesTurn
+        fakeState.choosingPromotion = -1
+
+        socket.emit("sendInfo", {"room" : this.props.match.params.id, state : fakeState});
+
         //functions also does the things that the movepiece didnt do since promoting a pawn pauses the game
         this.setState(prevState => {
             return({
@@ -476,6 +489,8 @@ export class Board extends React.Component {
             choosingPromotion : -1
             });
         });
+
+       
     }
 
     componentWillMount() {
@@ -485,9 +500,8 @@ export class Board extends React.Component {
             this.setState(data);
         });
         */
-
-        if(!alreadyJoined){
-
+        
+        if(!alreadyJoined && this.state.gamemode === "multiplayer"){
             alreadyJoined = true;
 
             socket.emit("joinRoom", this.props.match.params.id, "white", (returnData) =>{
@@ -516,8 +530,6 @@ export class Board extends React.Component {
             });
         }
 
-
-
         socket.on("changeState", (data) => {
             let currentTeam = this.state.myTeam;
             data.myTeam = currentTeam;
@@ -534,10 +546,11 @@ export class Board extends React.Component {
     }
 
     render() {
-        console.log(finishedJoining);
+
         if(!finishedJoining) return(
             <div></div>
         );
+
         if(roomFull){
             return (
                 <h1>room is full</h1>
