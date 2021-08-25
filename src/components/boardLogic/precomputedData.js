@@ -235,5 +235,3 @@ for (let x = 0; x < 64; x++) {
     kingMoves.push(possibleMoves)
 
 }
-
-console.log(queenMoves)

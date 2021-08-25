@@ -1,6 +1,9 @@
 import React from 'react';
 import './App.css';
 import "./menu.css";
+import { io } from 'socket.io-client';
+
+var socket = io("http://localhost:3333/");
 
 class Menu extends React.Component {
     constructor(props){
@@ -12,8 +15,11 @@ class Menu extends React.Component {
     generateRoom(){
         let randomId = parseInt(Math.random() * 100000000);
 
+        socket.emit("createRoom", (randomId), (returnData) =>{
+            console.log(returnData);
+        });
+
         window.location.assign("/game/" + randomId.toString());
-        
     }
 
     render() {
