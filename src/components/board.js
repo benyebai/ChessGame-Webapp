@@ -74,7 +74,6 @@ export class Board extends React.Component {
             turnNum:1,
             whitesTurn: true,
             choosingPromotion : -1,
-            "roomFull" : roomFull
         }
 
         this.movePiece = this.movePiece.bind(this);
@@ -83,7 +82,11 @@ export class Board extends React.Component {
     }
 
     movePiece(from, to){
-        console.log(generateAllLegal(this.state.board, "white", this.state.turnNum));
+        console.log([from, to]);
+        if(this.state.myTeam === "black"){
+            from = 63 - from;
+            to = 63 - to;
+        }
 
         let fakeBoard = this.state.board;
         let oldBoardState = JSON.parse(JSON.stringify(this.state.board));
@@ -99,9 +102,7 @@ export class Board extends React.Component {
         else if(!this.state.whitesTurn){
             if(pieceMove.team === "white") return;
         }
-        
-        
-        
+
         let kingsSquare = 0;
         let teamMoving = "black";
         if(this.state.whitesTurn) teamMoving = "white";
@@ -219,9 +220,7 @@ export class Board extends React.Component {
             });
         });
 
-        socket.emit("lmao", {"board":this.state.board});
         socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state})
-        checkPinned(this.state.board, 4, 'black')
     }
 
     genValidMovesKnight(pos){
@@ -501,10 +500,16 @@ export class Board extends React.Component {
                     roomNonexist = true;
                 }
                 else if(returnData == "joined black"){
-
+                    this.setState({
+                        myTeam : "black"
+                    });
+                    return;
                 }
                 else if(returnData == "joined white"){
-                    
+                    this.setState({
+                        myTeam : "white"
+                    });
+                    return;
                 }
 
                 this.forceUpdate();  
@@ -514,6 +519,9 @@ export class Board extends React.Component {
 
 
         socket.on("changeState", (data) => {
+            let currentTeam = this.state.myTeam;
+            data.myTeam = currentTeam;
+
             this.setState(data);
         });
 
@@ -531,13 +539,11 @@ export class Board extends React.Component {
             <div></div>
         );
         if(roomFull){
-            console.log("asdasdasdasdasdasdasdasd");
             return (
                 <h1>room is full</h1>
             )
         }
         else if(roomNonexist){
-            console.log("asdasdasdasdasdasdasdasd");
             return (
                 <h1>room doesn't exist</h1>
             )
@@ -554,18 +560,21 @@ export class Board extends React.Component {
         for(let i = 0; i < 8; i ++){
             let currentRow = [];
             for(let j = 0; j < 8; j++){
+                let squareIndex = (i * 8) + j;
+                if(this.state.myTeam === "black") squareIndex = 63 - squareIndex;
+
                 let squareProps = {row : i, col : j, board:this};
 
-                if(this.state.board[(i * 8) + j] === "em"){
+                if(this.state.board[squareIndex] === "em"){
                     currentRow.push(<Square props = {squareProps} />);
                 }
-                else if(this.state.choosingPromotion === (i * 8) + j){
+                else if(this.state.choosingPromotion === squareIndex){
                     currentRow.push(
                     <Square props = {squareProps} >
                         <Promotion 
                             promoteFunc = {this.promotePawn}
-                            team = {this.state.board[(i * 8) + j].team}
-                            whichWay = {((i * 8) + j) < 8 ? "down" : "up"}
+                            team = {this.state.board[squareIndex].team}
+                            whichWay = {squareIndex < 8 ? "down" : "up"}
                         />
                     </Square>
                     );
@@ -575,9 +584,9 @@ export class Board extends React.Component {
                     <Square props = {squareProps} >
                         <ChessPiece 
                         index = {(i * 8) + j}
-                        team = {this.state.board[(i * 8) + j]["team"]}
-                        piece = {this.state.board[(i * 8) + j]["piece"]}
-                        key = {this.state.board[(i * 8) + j]["key"]}
+                        team = {this.state.board[squareIndex]["team"]}
+                        piece = {this.state.board[squareIndex]["piece"]}
+                        key = {this.state.board[squareIndex]["key"]}
                         />
                     </Square>);
                 }
