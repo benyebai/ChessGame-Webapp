@@ -234,7 +234,7 @@ export class Board extends React.Component {
 
         resetGlobalVar()
 
-        decideBestAiMove(this.state.board, 'black', this.state.turnNum, 4)
+        decideBestAiMove(this.state.board, 'black', this.state.turnNum, 5)
         
 
         this.movePiece(bestMove[0], bestMove[1])
