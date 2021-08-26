@@ -9,6 +9,7 @@ import { checkPinned } from './boardLogic/checkPinned';
 import { generateAllLegal } from './boardLogic/moveGenerator';
 import { io } from 'socket.io-client';
 import WaitForOther from './waitForOther.js';
+import { makeBoardMove } from './ai/aiBullshit';
 
 var socket = io("http://localhost:3333/");
 var alreadyJoined = false;
@@ -88,6 +89,9 @@ export class Board extends React.Component {
     }
 
     movePiece(from, to){
+        console.log(generateAllLegal(this.state.board, "white", this.state.turnNum));
+        let fuck = generateAllLegal(this.state.board, "white", this.state.turnNum);
+        console.log(makeBoardMove(this.state.board, fuck[2][0], fuck[0][fuck[2][0]][0]))
         if(this.state.myTeam === "black"){
             from = 63 - from;
             to = 63 - to;

@@ -7,12 +7,82 @@ const rookVal = 50;
 const pawnVal = 10;
 
 
+
+
 // this basic idea is from here https://www.youtube.com/watch?v=U4ogK0MIzqk
 //great video from sebastian lague talking about making a chess ai
 // recursive function, depth first search going like a depth of 3 or 4 on all possible moves
 //the value of the move is based on piece value
 //go on enemys best move on your move and stuff
 //ive got no idea how to explain in text form but heres a timestamp of a good explanation https://youtu.be/U4ogK0MIzqk?t=819
-function decideBestAiMove(board, team, turnNum){
+function decideBestAiMove(board, team, turnNum, depth){
+    if(depth === 0) return evaluateValue(board, team);
 
+    let movesAtCurrent = generateAllLegal(board, team, turnNum);
+    if(movesAtCurrent === "checkmate") return -100000000;
+    if(movesAtCurrent === "stalemate") return 0;
+    for(let i = 0; i < movesAtCurrent[2].length; i++){
+        let curr = movesAtCurrent[2][i];
+        for(let j = 0; j < movesAtCurrent[0][curr].length; j++){
+            let newBoard = makeBoardMove(board, curr, movesAtCurrent[0][curr][j])
+        }
+    }
+}
+
+export function makeBoardMove(boardUntouchable, start, move){
+    //all special moves that i can think of
+    //en passant is not here since its sorta different
+
+    let board = [...boardUntouchable];
+
+    if(move === "right castle"){
+
+    }
+    else if (move === "left castle"){
+
+    }
+    else if(Array.isArray(move)){
+        board[move[0]] = board[start];
+        board[start] = "em";
+        switch(move[1]){
+            case "promote queen": board[move[0]].piece = "queen";
+            case "promote rook": board[move[0]].piece = "rook";
+            case "promote bishop": board[move[0]].piece = "bishop";
+            case "promote knight": board[move[0]].piece = "knight";
+        }
+    }
+
+    if(board[start].piece === "pawn"){
+        let pawnDirection = (move - start) / Math.abs(move - start);
+        if(move - start != 8 && board[move] === "em"){
+            board[move] = board[start];
+            board[start] = "em";
+            board[move - (8 * pawnDirection)] = "em";
+        }
+        else{
+            board[move] = board[start];
+            board[start] = "em";
+        }
+        return board;
+    }
+
+    board[move] = board[start];
+    board[start] = "em";
+    return board;
+}
+
+function evaluateValue(board, team){
+    let totalVal = 0;
+    for(let i = 0; i < board.length; i++){
+        if(board[i].team === team){
+            switch(board[i].piece){
+                case "pawn": totalVal += pawnVal;
+                case "rook": totalVal += rookVal;
+                case "knight": totalVal += knightVal;
+                case "bishop": totalVal += bishopVal;
+                case "queen": totalVal += queenVal;
+            }
+        }
+    }
+    return totalVal;
 }
