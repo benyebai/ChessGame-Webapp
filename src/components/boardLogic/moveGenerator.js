@@ -100,6 +100,11 @@ export function generateAllLegal(boardState, whosTeam, turnNum){
         allLegalMoves[alliedTeam[i]] = foundMoves;
     }
 
+    if(totalMovesFound == 0){
+        if(kingInCheck) return "checkmate";
+        else return "stalemate";
+    }
+
     return [allLegalMoves, totalMovesFound, alliedTeam];
 }
 
