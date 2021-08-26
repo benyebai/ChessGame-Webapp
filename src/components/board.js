@@ -9,7 +9,10 @@ import { checkPinned } from './boardLogic/checkPinned';
 import { generateAllLegal } from './boardLogic/moveGenerator';
 import { io } from 'socket.io-client';
 import WaitForOther from './waitForOther.js';
-import { makeBoardMove } from './ai/aiBullshit';
+import { biggestDepth, makeBoardMove } from './ai/aiBullshit';
+import { decideBestAiMove } from './ai/aiBullshit';
+import { bestMove } from './ai/aiBullshit';
+import { resetGlobalVar } from './ai/aiBullshit';
 
 var socket = io("http://localhost:3333/");
 var alreadyJoined = false;
@@ -227,6 +230,14 @@ export class Board extends React.Component {
             whitesTurn : !prevState.whitesTurn
             });
         });
+
+
+        resetGlobalVar()
+
+        decideBestAiMove(this.state.board, 'black', this.state.turnNum, 4)
+        
+
+        this.movePiece(bestMove[0], bestMove[1])
 
         socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state})
     }
