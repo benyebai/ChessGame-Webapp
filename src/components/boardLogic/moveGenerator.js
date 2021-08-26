@@ -368,8 +368,15 @@ function generateLegalPawn(pos, board, turnNum){
     for (let i = 0; i < possibleSpots.length; i++){
         let returnVal = checkValidPawn(start, possibleSpots[i], turnNum, board);
         if(returnVal !== false){
-            validMoves.push(possibleSpots[i])
+            if((-1 < possibleSpots[i] && possibleSpots[i] < 8) || (54 < possibleSpots[i] && possibleSpots[i] < 64)){
+                validMoves.push([possibleSpots[i], "promote queen"]);
+                validMoves.push([possibleSpots[i], "promote bishop"]);
+                validMoves.push([possibleSpots[i], "promote knight"]);
+                validMoves.push([possibleSpots[i], "promote rook"]);
+            }
+            else validMoves.push(possibleSpots[i])
         }
+        
     }
 
     //filter moves so they fit with check or pin
