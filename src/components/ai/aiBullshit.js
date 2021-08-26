@@ -73,10 +73,18 @@ export function makeBoardMove(boardUntouchable, start, move){
     let board = [...boardUntouchable];
 
     if(move === "right castle"){
-
+        board[start + 2] = board[start];
+        board[start] = "em";
+        board[start + 3] = board[start + 1];
+        board[start + 1] = "em"
+        return board;
     }
     else if (move === "left castle"){
-
+        board[start - 2] = board[start];
+        board[start] = "em";
+        board[start - 4] = board[start - 1];
+        board[start - 1] = "em"
+        return board;
     }
     else if(Array.isArray(move)){
         board[move[0]] = board[start];
@@ -87,6 +95,7 @@ export function makeBoardMove(boardUntouchable, start, move){
             case "promote bishop": board[move[0]].piece = "bishop";
             case "promote knight": board[move[0]].piece = "knight";
         }
+        return board;
     }
 
     if(board[start].piece === "pawn"){
@@ -100,7 +109,12 @@ export function makeBoardMove(boardUntouchable, start, move){
             board[move] = board[start];
             board[start] = "em";
         }
+        board[move].moved = true;
         return board;
+    }
+
+    if(board[start].piece === "king"){
+        board[start].moved = true;
     }
 
     board[move] = board[start];
@@ -109,6 +123,7 @@ export function makeBoardMove(boardUntouchable, start, move){
 }
 
 function evaluateValue(board, team){
+    if(board == null) console.log(board);
     let totalVal = 0;
     for(let i = 0; i < board.length; i++){
         if(board[i].team === team){

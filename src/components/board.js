@@ -9,6 +9,7 @@ import { checkPinned } from './boardLogic/checkPinned';
 import { generateAllLegal } from './boardLogic/moveGenerator';
 import { io } from 'socket.io-client';
 import WaitForOther from './waitForOther.js';
+import { convertSeconds } from './convertTime';
 import { biggestDepth, makeBoardMove } from './ai/aiBullshit';
 import { decideBestAiMove } from './ai/aiBullshit';
 import { bestMove } from './ai/aiBullshit';
@@ -24,6 +25,10 @@ var finishedJoining = false;
 export class Board extends React.Component {
 
     constructor(props){
+
+        console.log(convertSeconds(123));
+        console.log(convertSeconds(1500));
+        console.log(convertSeconds(600));
         super(props);
         if(this.props.gamemode === "local" || this.props.gamemode === "ai"){
             finishedJoining = true;
@@ -83,18 +88,20 @@ export class Board extends React.Component {
             turnNum:1,
             whitesTurn: true,
             choosingPromotion : -1,
-            gamemode: this.props.gamemode
+            gamemode: this.props.gamemode,
+            secondsLeftWhite : 1000,
+            secondsLeftBlack : 1000
         }
 
         this.movePiece = this.movePiece.bind(this);
         this.genValidMovesKnight = this.genValidMovesKnight.bind(this);
         this.promotePawn = this.promotePawn.bind(this);
+        this.timerBlack = null;
+        this.timerWhite = null;
     }
 
     movePiece(from, to){
-        console.log(generateAllLegal(this.state.board, "white", this.state.turnNum));
-        let fuck = generateAllLegal(this.state.board, "white", this.state.turnNum);
-        console.log(makeBoardMove(this.state.board, fuck[2][0], fuck[0][fuck[2][0]][0]))
+
         if(this.state.myTeam === "black"){
             from = 63 - from;
             to = 63 - to;
@@ -222,6 +229,23 @@ export class Board extends React.Component {
         }
 
         let currentTurn = this.state.turnNum;
+
+        if(this.state.whitesTurn){
+            this.timerBlack = setInterval(() => {
+                this.setState(state => ({
+                secondsLeftBlack : state.secondsLeftBlack - 1
+                }));
+            }, 1000);
+            clearInterval(this.timerWhite);
+        }
+        else{
+            this.timerWhite = setInterval(() => {
+                this.setState(state => ({
+                secondsLeftWhite : state.secondsLeftWhite - 1
+                }));
+            }, 1000);
+            clearInterval(this.timerBlack);
+        }
         
         this.setState(prevState => {
             return({
@@ -231,15 +255,32 @@ export class Board extends React.Component {
             });
         });
 
+        resetGlobalVar();
 
-        resetGlobalVar()
+        decideBestAiMove(fakeBoard, 'black', this.state.turnNum, 4);
+        this.movePieceAi(bestMove[0], bestMove[1]);
+        socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state});
+    }
 
-        decideBestAiMove(this.state.board, 'black', this.state.turnNum, 5)
-        
+    movePieceAi(from, to){
+        let fakeBoard = this.state.board;
 
-        this.movePiece(bestMove[0], bestMove[1])
+        if(this.state.myTeam === "black"){
+            from = 63 - from;
+            to = 63 - to;
+        }
 
-        socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state})
+        fakeBoard[to] = fakeBoard[from];
+        fakeBoard[from] = "em";
+
+        this.setState(prevState => {
+            return({
+            "board": fakeBoard,
+            turnNum: prevState.turnNum + 1,
+            whitesTurn : !prevState.whitesTurn
+            });
+        });
+
     }
 
     genValidMovesKnight(pos){
