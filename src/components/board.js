@@ -21,6 +21,11 @@ export class Board extends React.Component {
 
     constructor(props){
         super(props);
+        if(this.props.gamemode === "local" || this.props.gamemode === "ai"){
+            finishedJoining = true;
+            alreadyJoined = true;
+            everyoneIn = true;
+        }
 
         let fakeBoard = [];
         for(let i = 0; i < 64; i++){
@@ -74,6 +79,7 @@ export class Board extends React.Component {
             turnNum:1,
             whitesTurn: true,
             choosingPromotion : -1,
+            gamemode: this.props.gamemode
         }
 
         this.movePiece = this.movePiece.bind(this);
@@ -82,7 +88,6 @@ export class Board extends React.Component {
     }
 
     movePiece(from, to){
-        console.log([from, to]);
         if(this.state.myTeam === "black"){
             from = 63 - from;
             to = 63 - to;
@@ -95,6 +100,7 @@ export class Board extends React.Component {
         let kingOrNot = false;
         
         if(this.state.choosingPromotion > 0) return;
+        if(this.state.gamemode === "multiplayer" && this.state.board[from].team !== this.state.myTeam) return;
         
         if(this.state.whitesTurn){
             if(pieceMove.team === "black") return;
@@ -187,7 +193,6 @@ export class Board extends React.Component {
             pieceMove.moved = true;
 
             if((-1 < to && to < 8) || (54 < to && to < 64)){
-                console.log("asdasd");
                 fakeBoard[from] = "em";
                 fakeBoard[to] = pieceMove;
                 this.setState({
@@ -195,7 +200,6 @@ export class Board extends React.Component {
                     choosingPromotion : to
                 });
                 return;
-
             }
 
         }
@@ -465,7 +469,15 @@ export class Board extends React.Component {
         let fakeBoard = this.state.board;
         fakeBoard[this.state.choosingPromotion].piece = what;
 
-        console.log(this.state);
+        //due to the nature of setstate being an async functions, i cant rely on it finishing before the socket emit runs
+        //because of that i change what i need to over here first before changing state
+        let fakeState = this.state;
+        fakeState.board = fakeBoard;
+        fakeState.turnNum = this.state.turnNum + 1
+        fakeState.whitesTurn = !this.state.whitesTurn
+        fakeState.choosingPromotion = -1
+
+        socket.emit("sendInfo", {"room" : this.props.match.params.id, state : fakeState});
 
         //functions also does the things that the movepiece didnt do since promoting a pawn pauses the game
         this.setState(prevState => {
@@ -485,9 +497,8 @@ export class Board extends React.Component {
             this.setState(data);
         });
         */
-
-        if(!alreadyJoined){
-
+        
+        if(!alreadyJoined && this.state.gamemode === "multiplayer"){
             alreadyJoined = true;
 
             socket.emit("joinRoom", this.props.match.params.id, "white", (returnData) =>{
@@ -516,8 +527,6 @@ export class Board extends React.Component {
             });
         }
 
-
-
         socket.on("changeState", (data) => {
             let currentTeam = this.state.myTeam;
             data.myTeam = currentTeam;
@@ -534,10 +543,11 @@ export class Board extends React.Component {
     }
 
     render() {
-        console.log(finishedJoining);
+
         if(!finishedJoining) return(
             <div></div>
         );
+
         if(roomFull){
             return (
                 <h1>room is full</h1>
