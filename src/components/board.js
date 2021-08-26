@@ -10,6 +10,7 @@ import { generateAllLegal } from './boardLogic/moveGenerator';
 import { io } from 'socket.io-client';
 import WaitForOther from './waitForOther.js';
 import { makeBoardMove } from './ai/aiBullshit';
+import { convertSeconds } from './convertTime';
 
 var socket = io("http://localhost:3333/");
 var alreadyJoined = false;
@@ -21,6 +22,10 @@ var finishedJoining = false;
 export class Board extends React.Component {
 
     constructor(props){
+
+        console.log(convertSeconds(123));
+        console.log(convertSeconds(1500));
+        console.log(convertSeconds(600));
         super(props);
         if(this.props.gamemode === "local" || this.props.gamemode === "ai"){
             finishedJoining = true;
