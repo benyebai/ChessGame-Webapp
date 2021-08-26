@@ -169,7 +169,6 @@ function generateAttackSpaces(boardState, pieceIndex){
                         breakNext = true;
 
                         dangerSquaresFake = [...spotsChecked, pieceIndex];
-                        console.log(dangerSquaresFake)
                     }
                     else if(breakNext) break;
                     else break;
@@ -272,12 +271,14 @@ function generateLegalKing(pos, board){
     //if queenside rook hasnt moved and king hasnt moved then can castle
     //only if no pieces in between
 
-    if(board[pos + 3].piece === "rook" && board[pos + 3].moved === false){
+    if(pos + 3 > 63 || pos - 4 < 0) return finishedData;
+
+    if(board[pos + 3] != "em" && board[pos + 3].piece === "rook" && board[pos + 3].moved === false){
         if(board[pos + 1] === "em" && board[pos + 2] === "em"){
             if(!attackMap[pos + 1] && !attackMap[pos + 2])finishedData.push("right castle");      
         }
     }
-    if(board[pos - 4].piece === "rook" && board[pos - 4].moved === false){
+    if(board[pos - 4] != "em" && board[pos - 4].piece === "rook" && board[pos - 4].moved === false){
         if(board[pos - 3] === "em" && board[pos - 2] === "em" && board[pos - 1] === "em"){
             if(!attackMap[pos - 1] && !attackMap[pos - 2]) finishedData.push("left castle");
         }
