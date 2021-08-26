@@ -7,6 +7,10 @@ const rookVal = 50;
 const pawnVal = 10;
 
 
+export var bestMove = []
+export var biggestDepth = 0
+
+
 
 
 // this basic idea is from here https://www.youtube.com/watch?v=U4ogK0MIzqk
@@ -15,18 +19,51 @@ const pawnVal = 10;
 //the value of the move is based on piece value
 //go on enemys best move on your move and stuff
 //ive got no idea how to explain in text form but heres a timestamp of a good explanation https://youtu.be/U4ogK0MIzqk?t=819
-function decideBestAiMove(board, team, turnNum, depth){
+
+
+export function resetGlobalVar() {
+    bestMove = []
+    biggestDepth = 0
+}
+
+
+export function decideBestAiMove(board, team, turnNum, depth){
     if(depth === 0) return evaluateValue(board, team);
+
+    if (depth > biggestDepth) {
+        biggestDepth = depth
+    }
 
     let movesAtCurrent = generateAllLegal(board, team, turnNum);
     if(movesAtCurrent === "checkmate") return -100000000;
     if(movesAtCurrent === "stalemate") return 0;
+
+    let bestEvaluation = -100000000
+
     for(let i = 0; i < movesAtCurrent[2].length; i++){
         let curr = movesAtCurrent[2][i];
         for(let j = 0; j < movesAtCurrent[0][curr].length; j++){
             let newBoard = makeBoardMove(board, curr, movesAtCurrent[0][curr][j])
+            let oppositeTeam = board[curr].team
+
+            if (oppositeTeam === 'white') {
+                oppositeTeam = 'black'
+            } else {
+                oppositeTeam = 'white'
+            }
+
+            let evaluation = -(decideBestAiMove(newBoard, oppositeTeam, turnNum + 1, depth - 1))
+            bestEvaluation = Math.max(evaluation, bestEvaluation)
+
+            if (bestEvaluation === evaluation && depth === biggestDepth) {
+                bestMove = [curr, movesAtCurrent[0][curr][j]]
+            }
+
+
         }
     }
+
+    return bestEvaluation
 }
 
 export function makeBoardMove(boardUntouchable, start, move){
