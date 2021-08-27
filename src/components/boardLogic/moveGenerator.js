@@ -80,7 +80,13 @@ export function generateAllLegal(boardState, whosTeam, turnNum){
     allLegalMoves[alliedKing] = kingsMoves;
     totalMovesFound += kingsMoves.length;
 
-    if(kingDoubleCheck) return [allLegalMoves, totalMovesFound, [alliedKing]];
+    if(kingDoubleCheck){
+        if(totalMovesFound == 0){
+            return "checkmate";
+            console.log("checkmate");
+        }
+        return [allLegalMoves, totalMovesFound, [alliedKing]];
+    }
 
     for (let i = 0; i < alliedTeam.length; i++){
         let foundMoves = [];
@@ -101,7 +107,11 @@ export function generateAllLegal(boardState, whosTeam, turnNum){
     }
 
     if(totalMovesFound == 0){
-        if(kingInCheck) return "checkmate";
+        if(kingInCheck){
+            console.log("checkmate")
+            return "checkmate";
+            
+        }
         else return "stalemate";
     }
 
@@ -341,13 +351,13 @@ function checkValidPawn(start, end, turnNum, board){
     //if pawn to my left or right double jumped last turn
     if(board[start - (1 * movementDir)].doublejumped === turnNum - 1){
         if(end === start + (7 * movementDir) && board[end] === "em"){
-            return movementDir;
+            return ["en passant"];
         }
     }
 
     if(board[start + (1 * movementDir)].doublejumped === turnNum - 1){
         if(end === start + (9 * movementDir) && board[end] === "em"){
-            return movementDir;
+            return ["en passant"];
         }
     }
 
@@ -374,13 +384,14 @@ function generateLegalPawn(pos, board, turnNum){
     for (let i = 0; i < possibleSpots.length; i++){
         let returnVal = checkValidPawn(start, possibleSpots[i], turnNum, board);
         if(returnVal !== false){
-            if((-1 < possibleSpots[i] && possibleSpots[i] < 8) || (54 < possibleSpots[i] && possibleSpots[i] < 64)){
+            if((-1 < possibleSpots[i] && possibleSpots[i] < 8) || (55 < possibleSpots[i] && possibleSpots[i] < 64)){
                 validMoves.push([possibleSpots[i], "promote queen"]);
                 validMoves.push([possibleSpots[i], "promote bishop"]);
                 validMoves.push([possibleSpots[i], "promote knight"]);
                 validMoves.push([possibleSpots[i], "promote rook"]);
             }
-            else validMoves.push(possibleSpots[i])
+            else if(returnVal === "en passant") validMoves.push(["en passant", possibleSpots[i]]);
+            else validMoves.push(possibleSpots[i]);
         }
         
     }

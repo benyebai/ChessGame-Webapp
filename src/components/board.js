@@ -10,7 +10,7 @@ import { generateAllLegal } from './boardLogic/moveGenerator';
 import { io } from 'socket.io-client';
 import WaitForOther from './waitForOther.js';
 import { convertSeconds } from './convertTime';
-import { biggestDepth, makeBoardMove } from './ai/aiBullshit';
+import { biggestDepth, makeBoardMove, unMakeBoardMove } from './ai/aiBullshit';
 import { decideBestAiMove } from './ai/aiBullshit';
 import { bestMove } from './ai/aiBullshit';
 import { resetGlobalVar } from './ai/aiBullshit';
@@ -101,6 +101,7 @@ export class Board extends React.Component {
     }
 
     movePiece(from, to){
+        console.log(this.state.board);
 
         if(this.state.myTeam === "black"){
             from = 63 - from;
@@ -152,8 +153,9 @@ export class Board extends React.Component {
 
         let changePositions = true;
         if(pieceMove.piece === "king"){
-            let board = fakeBoard
+            let board = fakeBoard;
             let kingsMove = this.checkValidKing(from, to);
+            console.log(kingsMove);
             changePositions = false;
 
             if(kingsMove === "black left"){
@@ -175,6 +177,7 @@ export class Board extends React.Component {
                 board[to] = 'em'
             }
             if(kingsMove == "white right"){
+                console.log("asd");
                 board[62] = board[from]
                 board[61] = board[to]
                 board[to] = 'em'
@@ -205,8 +208,9 @@ export class Board extends React.Component {
             else return;
 
             pieceMove.moved = true;
+            pieceMove.movedBefore = true;
 
-            if((-1 < to && to < 8) || (54 < to && to < 64)){
+            if((-1 < to && to < 8) || (55 < to && to < 64)){
                 fakeBoard[from] = "em";
                 fakeBoard[to] = pieceMove;
                 this.setState({
@@ -246,6 +250,9 @@ export class Board extends React.Component {
             }, 1000);
             clearInterval(this.timerBlack);
         }
+
+        pieceMove.moved = true;
+        pieceMove.movedBefore = true;
         
         this.setState(prevState => {
             return({
@@ -255,10 +262,13 @@ export class Board extends React.Component {
             });
         });
 
-        resetGlobalVar();
+        if(this.props.gamemode === "ai"){
+            resetGlobalVar();
 
-        decideBestAiMove(fakeBoard, 'black', this.state.turnNum, 4);
-        this.movePieceAi(bestMove[0], bestMove[1]);
+            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 3);
+            this.movePieceAi(bestMove[0], bestMove[1]);
+        }
+        
         socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state});
     }
 
@@ -272,6 +282,20 @@ export class Board extends React.Component {
 
         fakeBoard[to] = fakeBoard[from];
         fakeBoard[from] = "em";
+
+        if(fakeBoard[to] == "em"){
+            console.log(from);
+            console.log(to);
+        }
+
+        fakeBoard[to].moved = true;
+        fakeBoard[to].movedBefore = true;
+
+        if(fakeBoard[to].piece === "pawn"){
+            if(Math.abs(to - from) == 16){
+                fakeBoard[to].doublejumped = this.state.turnNum;
+            }
+        }
 
         this.setState(prevState => {
             return({
@@ -360,6 +384,7 @@ export class Board extends React.Component {
     checkValidPawn(start, stop){
         //forward mvoement check
         let board = this.state.board;
+        
 
         //1 means down
         let movementDir = 1;
@@ -404,28 +429,6 @@ export class Board extends React.Component {
         }
 
         return false
-    }
-
-    genValidPawn(start){
-        let validMoves = []
-        let board = this.state.board;
-
-        if(board[start].pinned){
-            //not exactly true all the time
-            return [];
-        }
-
-        let movementDir = 1;
-        if(board[start].team === "white"){
-            movementDir = -1;
-        }  
-
-        if(this.checkValidPawn(start, start + (8 * movementDir))) validMoves.push(start + (8 * movementDir));
-        if(this.checkValidPawn(start, start + (16 * movementDir))) validMoves.push(start + (16 * movementDir));
-        if(this.checkValidPawn(start, start + (7 * movementDir))) validMoves.push(start + (7 * movementDir));
-        if(this.checkValidPawn(start, start + (9 * movementDir))) validMoves.push(start + (9 * movementDir));
-
-        return validMoves;
     }
 
     checkLegal(kingSquare, kingTeam, boardState){
@@ -627,6 +630,7 @@ export class Board extends React.Component {
             let currentRow = [];
             for(let j = 0; j < 8; j++){
                 let squareIndex = (i * 8) + j;
+                console.log()
                 if(this.state.myTeam === "black") squareIndex = 63 - squareIndex;
 
                 let squareProps = {row : i, col : j, board:this};
