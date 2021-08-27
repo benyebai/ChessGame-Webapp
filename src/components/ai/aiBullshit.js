@@ -1,10 +1,10 @@
 import { generateAllLegal } from "../boardLogic/moveGenerator";
 
-const queenVal = 9;
-const bishopVal = 3;
-const knightVal = 3;
-const rookVal = 5;
-const pawnVal = 1;
+const queenVal = 900;
+const bishopVal = 300;
+const knightVal = 300;
+const rookVal = 500;
+const pawnVal = 100;
 
 
 export var bestMove = []
@@ -27,12 +27,10 @@ export function resetGlobalVar() {
     biggestDepth = 0
 }
 
-
 export function decideBestAiMove(board, team, turnNum, depth){
     if(depth === 0){
         let oppTeam = (team === "white" ? "black" : "white");
-        let val = evaluateValue(board, team) - evaluateValue(board, oppTeam);
-        return evaluateValue(board, team);
+        return -(evaluateValue(board, team) - evaluateValue(board, oppTeam));
     } 
 
     if (depth > biggestDepth) {
@@ -64,12 +62,11 @@ export function decideBestAiMove(board, team, turnNum, depth){
 
             if (bestEvaluation === evaluation && depth === biggestDepth) {
                 bestMove = [curr, movesAtCurrent[0][curr][j]];
+                console.log(bestMove);
+                console.log(bestEvaluation);
             }
-
-
         }
     }
-    console.log(bestEvaluation);
 
     return bestEvaluation
 }
@@ -194,13 +191,14 @@ function evaluateValue(board, team){
     for(let i = 0; i < board.length; i++){
         if(board[i].team === team){
             switch(board[i].piece){
-                case "pawn": totalVal += pawnVal;
-                case "rook": totalVal += rookVal;
-                case "knight": totalVal += knightVal;
-                case "bishop": totalVal += bishopVal;
-                case "queen": totalVal += queenVal;
+                case "pawn": totalVal += pawnVal; break;
+                case "rook": totalVal += rookVal; break;
+                case "knight": totalVal += knightVal; break;
+                case "bishop": totalVal += bishopVal; break;
+                case "queen": totalVal += queenVal; break;
             }
         }
     }
+
     return totalVal;
 }

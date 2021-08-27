@@ -32,9 +32,9 @@ export function generateAllLegal(boardState, whosTeam, turnNum){
 
     //reset the values back to default
     kingDoubleCheck = false;
-    attackMap = defaultAttackMap;
+    attackMap = [...defaultAttackMap];
     kingInCheck = false;
-    dangerSquares = dangerSquaresDefault;
+    dangerSquares = [...dangerSquaresDefault];
     pinnedPositions = [...pinnedPositionsDefault];
 
     let enemyTeam = whosTeam === "white" ? "black" : "white";
@@ -108,9 +108,9 @@ export function generateAllLegal(boardState, whosTeam, turnNum){
 
     if(totalMovesFound == 0){
         if(kingInCheck){
-            console.log("checkmate")
+            console.log("checkmate");
+            console.log(attackMap);
             return "checkmate";
-            
         }
         else return "stalemate";
     }

@@ -265,7 +265,7 @@ export class Board extends React.Component {
         if(this.props.gamemode === "ai"){
             resetGlobalVar();
 
-            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 3);
+            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 4);
             this.movePieceAi(bestMove[0], bestMove[1]);
         }
         
@@ -274,6 +274,10 @@ export class Board extends React.Component {
 
     movePieceAi(from, to){
         let fakeBoard = this.state.board;
+        if(from == null || to == null){
+            //youre ion checkmate
+            return;
+        }
 
         if(this.state.myTeam === "black"){
             from = 63 - from;
@@ -282,11 +286,6 @@ export class Board extends React.Component {
 
         fakeBoard[to] = fakeBoard[from];
         fakeBoard[from] = "em";
-
-        if(fakeBoard[to] == "em"){
-            console.log(from);
-            console.log(to);
-        }
 
         fakeBoard[to].moved = true;
         fakeBoard[to].movedBefore = true;
