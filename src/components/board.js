@@ -89,8 +89,10 @@ export class Board extends React.Component {
             whitesTurn: true,
             choosingPromotion : -1,
             gamemode: this.props.gamemode,
-            secondsLeftWhite : 1000,
-            secondsLeftBlack : 1000
+            secondsLeftWhite : 600,
+            secondsLeftBlack : 600,
+            gaming: true,
+            winner : null
         }
 
         this.movePiece = this.movePiece.bind(this);
@@ -232,7 +234,7 @@ export class Board extends React.Component {
 
         let currentTurn = this.state.turnNum;
 
-        if(this.props.gamemode !== "multiplayer"){
+        if(this.props.gamemode === "local"){
 
             if(this.state.whitesTurn){
                 this.timerBlack = setInterval(() => {
@@ -262,11 +264,11 @@ export class Board extends React.Component {
             whitesTurn : !prevState.whitesTurn
             });
         });
-
+        
         if(this.props.gamemode === "ai"){
             resetGlobalVar();
 
-            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 3);
+            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 4);
             this.movePieceAi(bestMove[0], bestMove[1]);
         }
         
@@ -559,6 +561,14 @@ export class Board extends React.Component {
         });
     }
 
+    whiteWins(){
+
+    }
+
+    blackWins(){
+
+    }
+
     componentWillMount() {
         /*
         socket.on("board", (data) => {
@@ -631,6 +641,8 @@ export class Board extends React.Component {
         });
     }
 
+
+
     render() {
         if(!finishedJoining) return(
             <div></div>
@@ -693,15 +705,24 @@ export class Board extends React.Component {
             entireBoard.push(<div style = {{display:"flex"}}>{currentRow}</div>);
         }
 
+        let fuck = <div></div>;
+        if(!this.state.gaming){
+            let winner = this.state.winner;
+            fuck = (
+            <div>
+                <h1>{winner} wins</h1>
+            </div>);
+        }
+
         return(
             <div style = {{width:"100%", height:"100%", display:"flex"}}>
             <CustomDragLayer />
                 <div>
                     {entireBoard}
                 </div>
-            <h1>white {this.state.secondsLeftWhite} <br /><br /> black {this.state.secondsLeftBlack}</h1>
+            {this.props.gamemode !== "ai" ? <h1>white {convertSeconds(this.state.secondsLeftWhite)} <br /><br /> black {convertSeconds(this.state.secondsLeftBlack)}</h1> : <div />}
             
-            <h1></h1>
+            {fuck}
             </div>
         );
     }
