@@ -105,10 +105,10 @@ export function makeBoardMove(board, start, move){
             board[move[0]] = board[start];
             board[start] = "em";
             switch(move[1]){
-                case "promote queen": board[move[0]].piece = "queen";
-                case "promote rook": board[move[0]].piece = "rook";
-                case "promote bishop": board[move[0]].piece = "bishop";
-                case "promote knight": board[move[0]].piece = "knight";
+                case "promote queen": board[move[0]].piece = "queen"; break;
+                case "promote rook": board[move[0]].piece = "rook"; break;
+                case "promote bishop": board[move[0]].piece = "bishop"; break;
+                case "promote knight": board[move[0]].piece = "knight"; break;
             }
             return board;
         }

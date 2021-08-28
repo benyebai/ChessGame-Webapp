@@ -101,8 +101,6 @@ export class Board extends React.Component {
     }
 
     movePiece(from, to){
-        console.log(this.state.board);
-
         if(this.state.myTeam === "black"){
             from = 63 - from;
             to = 63 - to;
@@ -234,21 +232,24 @@ export class Board extends React.Component {
 
         let currentTurn = this.state.turnNum;
 
-        if(this.state.whitesTurn){
-            this.timerBlack = setInterval(() => {
-                this.setState(state => ({
-                secondsLeftBlack : state.secondsLeftBlack - 1
-                }));
-            }, 1000);
-            clearInterval(this.timerWhite);
-        }
-        else{
-            this.timerWhite = setInterval(() => {
-                this.setState(state => ({
-                secondsLeftWhite : state.secondsLeftWhite - 1
-                }));
-            }, 1000);
-            clearInterval(this.timerBlack);
+        if(this.props.gamemode !== "multiplayer"){
+
+            if(this.state.whitesTurn){
+                this.timerBlack = setInterval(() => {
+                    this.setState(state => ({
+                    secondsLeftBlack : state.secondsLeftBlack - 1
+                    })); console.log(this.state.secondsLeftBlack);
+                }, 1000);
+                clearInterval(this.timerWhite);
+            }
+            else{
+                this.timerWhite = setInterval(() => {
+                    this.setState(state => ({
+                    secondsLeftWhite : state.secondsLeftWhite - 1
+                    })); console.log(this.state.secondsLeftWhite);
+                }, 1000);
+                clearInterval(this.timerBlack);
+            }
         }
 
         pieceMove.moved = true;
@@ -265,7 +266,7 @@ export class Board extends React.Component {
         if(this.props.gamemode === "ai"){
             resetGlobalVar();
 
-            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 4);
+            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 3);
             this.movePieceAi(bestMove[0], bestMove[1]);
         }
         
@@ -282,6 +283,16 @@ export class Board extends React.Component {
         if(this.state.myTeam === "black"){
             from = 63 - from;
             to = 63 - to;
+        }
+
+        if(fakeBoard[from] != "em" && fakeBoard[from].piece == "pawn" && Array.isArray(to)){
+            switch(to[1]){
+                case "promote queen": fakeBoard[from].piece = "queen"; break;
+                case "promote rook": fakeBoard[from].piece = "rook"; break;
+                case "promote bishop": fakeBoard[from].piece = "bishop"; break;
+                case "promote knight": fakeBoard[from].piece = "knight"; break;
+            }
+            to = to[0];
         }
 
         fakeBoard[to] = fakeBoard[from];
@@ -588,6 +599,26 @@ export class Board extends React.Component {
         socket.on("changeState", (data) => {
             let currentTeam = this.state.myTeam;
             data.myTeam = currentTeam;
+            if(this.state.secondsLeftWhite < data.secondsLeftWhite) data.secondsLeftWhite = this.state.secondsLeftWhite;
+            if(this.state.secondsLeftBlack < data.secondsLeftBlack) data.secondsLeftBlack = this.state.secondsLeftBlack;
+
+            clearInterval(this.timerBlack);
+            clearInterval(this.timerWhite);
+
+            if(!data.whitesTurn){
+                this.timerBlack = setInterval(() => {
+                    this.setState(state => ({
+                    secondsLeftBlack : state.secondsLeftBlack - 1
+                    }));
+                }, 1000);
+            }
+            else{
+                this.timerWhite = setInterval(() => {
+                    this.setState(state => ({
+                    secondsLeftWhite : state.secondsLeftWhite - 1
+                    }));
+                }, 1000);
+            }
 
             this.setState(data);
         });
@@ -601,7 +632,6 @@ export class Board extends React.Component {
     }
 
     render() {
-
         if(!finishedJoining) return(
             <div></div>
         );
@@ -664,9 +694,14 @@ export class Board extends React.Component {
         }
 
         return(
-            <div style = {{width:"100%", height:"100%"}}>
+            <div style = {{width:"100%", height:"100%", display:"flex"}}>
             <CustomDragLayer />
-            {entireBoard}
+                <div>
+                    {entireBoard}
+                </div>
+            <h1>white {this.state.secondsLeftWhite} <br /><br /> black {this.state.secondsLeftBlack}</h1>
+            
+            <h1></h1>
             </div>
         );
     }
