@@ -59,8 +59,6 @@ export function generateAllLegal(boardState, whosTeam, turnNum){
         }
     }
 
-
-
     /*
     console.log(attackMap);
     console.log(kingInCheck);
@@ -329,7 +327,7 @@ function checkValidPawn(start, end, turnNum, board){
     //if the start and stop is on the same row, required due to quriks of making board 1 layer
     if(Math.floor(end / 8) == Math.floor(start / 8)) return false;
     if(Math.abs(Math.floor(end / 8) - Math.floor(start/8)) == 2){
-        if(end === start + (16 * movementDir) && board[end] === "em" && board[start].moved === false){
+        if(end === start + (16 * movementDir) && board[end] === "em" && board[start].moved === false && board[end - (8 * movementDir)] === "em"){
             return "double";
         }
         else return false
