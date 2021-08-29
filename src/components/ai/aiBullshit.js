@@ -27,7 +27,7 @@ export function resetGlobalVar() {
     biggestDepth = 0
 }
 
-export function decideBestAiMove(board, team, turnNum, depth){
+export function decideBestAiMove(board, team, turnNum, depth, alpha, beta){
     if(depth === 0){
         let oppTeam = (team === "white" ? "black" : "white");
         return -(evaluateValue(board, team) - evaluateValue(board, oppTeam));
@@ -41,7 +41,6 @@ export function decideBestAiMove(board, team, turnNum, depth){
     if(movesAtCurrent === "checkmate") return -100000000;
     if(movesAtCurrent === "stalemate") return 0;
 
-    let bestEvaluation = -100000000
 
     for(let i = 0; i < movesAtCurrent[2].length; i++){
         let curr = movesAtCurrent[2][i];
@@ -56,19 +55,24 @@ export function decideBestAiMove(board, team, turnNum, depth){
                 oppositeTeam = 'white';
             }
 
-            let evaluation = -(decideBestAiMove(newBoard, oppositeTeam, turnNum + 1, depth - 1));
-            bestEvaluation = Math.max(evaluation, bestEvaluation);
+            let evaluation = -(decideBestAiMove(newBoard, oppositeTeam, turnNum + 1, depth - 1, -beta, -alpha));
             unMakeBoardMove(board, curr, movesAtCurrent[0][curr][j], previousMove);
+            if (evaluation >= beta) {
+                return beta;
+            }
 
-            if (bestEvaluation === evaluation && depth === biggestDepth) {
+
+            alpha = Math.max(alpha, evaluation)
+
+            if (alpha === evaluation && depth === biggestDepth) {
                 bestMove = [curr, movesAtCurrent[0][curr][j]];
                 console.log(bestMove);
-                console.log(bestEvaluation);
+                console.log(alpha);
             }
         }
     }
 
-    return bestEvaluation
+    return alpha
 }
 
 export function makeBoardMove(board, start, move){

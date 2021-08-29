@@ -268,7 +268,7 @@ export class Board extends React.Component {
         if(this.props.gamemode === "ai"){
             resetGlobalVar();
 
-            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 4);
+            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 4, -1000000, 100000000);
             this.movePieceAi(bestMove[0], bestMove[1]);
         }
         
@@ -288,11 +288,17 @@ export class Board extends React.Component {
         }
 
         if(fakeBoard[from] != "em" && fakeBoard[from].piece == "pawn" && Array.isArray(to)){
-            switch(to[1]){
-                case "promote queen": fakeBoard[from].piece = "queen"; break;
-                case "promote rook": fakeBoard[from].piece = "rook"; break;
-                case "promote bishop": fakeBoard[from].piece = "bishop"; break;
-                case "promote knight": fakeBoard[from].piece = "knight"; break;
+            if(to[0] === "en passant"){
+                let pawnDirection = (to[1] - from) / Math.abs(to[1] - from);
+                fakeBoard[to[1] - (8 * pawnDirection)] = "em";
+            }
+            else{
+                switch(to[1]){
+                    case "promote queen": fakeBoard[from].piece = "queen"; break;
+                    case "promote rook": fakeBoard[from].piece = "rook"; break;
+                    case "promote bishop": fakeBoard[from].piece = "bishop"; break;
+                    case "promote knight": fakeBoard[from].piece = "knight"; break;
+                }
             }
             to = to[0];
         }
@@ -408,10 +414,10 @@ export class Board extends React.Component {
         //if the start and stop is on the same row, required due to quriks of making board 1 layer
         if(Math.floor(stop / 8) == Math.floor(start / 8)) return false;
         if(Math.abs(Math.floor(stop / 8) - Math.floor(start/8)) == 2){
-            if(stop === start + (16 * movementDir) && board[stop] === "em"){
+            if(stop === start + (16 * movementDir) && board[stop] === "em" && board[stop - (8 * movementDir)] === "em"){
                 return "double";
             }
-            else return false
+            else return false;
         }
 
         //vertical movement
