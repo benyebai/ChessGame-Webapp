@@ -14,6 +14,7 @@ import { biggestDepth, makeBoardMove, unMakeBoardMove } from './ai/aiBullshit';
 import { decideBestAiMove } from './ai/aiBullshit';
 import { bestMove } from './ai/aiBullshit';
 import { resetGlobalVar } from './ai/aiBullshit';
+import { fuckMe } from './ai/aiBullshit';
 
 var socket = io("http://localhost:3333/");
 var alreadyJoined = false;
@@ -103,6 +104,8 @@ export class Board extends React.Component {
     }
 
     movePiece(from, to){
+
+        console.log(this.state);
         if(this.state.myTeam === "black"){
             from = 63 - from;
             to = 63 - to;
@@ -266,13 +269,15 @@ export class Board extends React.Component {
         });
         
         if(this.props.gamemode === "ai"){
-            resetGlobalVar();
+            resetGlobalVar("black");
 
             decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 4, -1000000, 100000000);
             this.movePieceAi(bestMove[0], bestMove[1]);
         }
         
         socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state});
+
+        console.log(fuckMe);
     }
 
     movePieceAi(from, to){
@@ -556,7 +561,6 @@ export class Board extends React.Component {
 
         socket.emit("sendInfo", {"room" : this.props.match.params.id, state : fakeState});
 
-        //functions also does the things that the movepiece didnt do since promoting a pawn pauses the game
         this.setState(prevState => {
             return({
             "board": fakeBoard,
@@ -565,6 +569,22 @@ export class Board extends React.Component {
             choosingPromotion : -1
             });
         });
+
+        if(this.props.gamemode === "ai"){
+            resetGlobalVar();
+
+            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 4, -1000000, 100000000);
+            this.movePieceAi(bestMove[0], bestMove[1]);
+
+            
+            this.setState(prevState => {
+                return({
+                whitesTurn : !prevState.whitesTurn,
+                });
+            });
+        }
+        //functions also does the things that the movepiece didnt do since promoting a pawn pauses the game
+
     }
 
     whiteWins(){

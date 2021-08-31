@@ -42,14 +42,10 @@ export function checkPinned(board, kingPos, team) {
                 break
             }
 
-            
             else if (boardCopy[lineOfSight[i][j]].team === team && found === null) {
                 found = boardCopy[lineOfSight[i][j]]
                 foundPos = lineOfSight[i][j]
             }
-
-           
-            
         }
     }
 
