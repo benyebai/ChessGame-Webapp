@@ -1,4 +1,5 @@
 import { generateAllLegal } from "../boardLogic/moveGenerator";
+import { lazyMoveOrder } from "../boardLogic/moveGenerator";
 
 const queenVal = 900;
 const bishopVal = 300;
@@ -10,6 +11,8 @@ const pawnVal = 100;
 export var bestMove = []
 export var biggestDepth = 0
 var previous = "em";
+export var fuckMe = 0;
+var myTeam = "black";
 
 
 
@@ -22,26 +25,75 @@ var previous = "em";
 //ive got no idea how to explain in text form but heres a timestamp of a good explanation https://youtu.be/U4ogK0MIzqk?t=819
 
 
-export function resetGlobalVar() {
-    bestMove = []
-    biggestDepth = 0
+export function resetGlobalVar(team) {
+    bestMove = [];
+    biggestDepth = 0;
+    fuckMe = 0;
+    myTeam = team;
 }
 
 export function decideBestAiMove(board, team, turnNum, depth, alpha, beta){
+    fuckMe += 1;
     if(depth === 0){
         let oppTeam = (team === "white" ? "black" : "white");
-        return -(evaluateValue(board, team) - evaluateValue(board, oppTeam));
+        let mult = 1;
+        if(biggestDepth % 2 == 0) mult = -1;
+        return mult * (evaluateValue(board, team) - evaluateValue(board, oppTeam));
     } 
 
     if (depth > biggestDepth) {
-        biggestDepth = depth
+        biggestDepth = depth;
     }
 
     let movesAtCurrent = generateAllLegal(board, team, turnNum);
+    //let ordered = lazyMoveOrder([...board], movesAtCurrent);
+
     if(movesAtCurrent === "checkmate") return -100000000;
     if(movesAtCurrent === "stalemate") return 0;
 
+    //console.log(ordered);
 
+    /*
+    
+    for(let i = 0; i < ordered.length; i++){
+        let curr = ordered[i];
+        let newBoard = makeBoardMove(board, curr[0], curr[1]);
+        let previousMove = previous;
+        let oppositeTeam = board[curr[0]].team;
+
+        if (oppositeTeam === 'white') {
+            oppositeTeam = 'black';
+        } else {
+            oppositeTeam = 'white';
+        }
+
+        let evaluation = -(decideBestAiMove(newBoard, oppositeTeam, turnNum + 1, depth - 1, -beta, -alpha));
+
+        unMakeBoardMove(board, curr[0], curr[1], previousMove);
+
+        if (evaluation >= beta) {
+            return beta;
+        }
+
+        let changedAlpha = false;
+
+        if(evaluation >= alpha) {
+            alpha = evaluation;
+            changedAlpha = true;
+        }
+
+        //alpha = Math.max(alpha, evaluation);
+
+        if (changedAlpha && depth === biggestDepth) {
+            bestMove = [curr[0], curr[1]];
+            //console.log(bestMove);
+            //console.log(alpha);
+        }
+    }
+    */
+   
+    //old code
+    //works if you make it
     for(let i = 0; i < movesAtCurrent[2].length; i++){
         let curr = movesAtCurrent[2][i];
         for(let j = 0; j < movesAtCurrent[0][curr].length; j++){
@@ -61,13 +113,12 @@ export function decideBestAiMove(board, team, turnNum, depth, alpha, beta){
                 return beta;
             }
 
-
             alpha = Math.max(alpha, evaluation)
 
             if (alpha === evaluation && depth === biggestDepth) {
                 bestMove = [curr, movesAtCurrent[0][curr][j]];
-                console.log(bestMove);
-                console.log(alpha);
+                //console.log(bestMove);
+                //console.log(alpha);
             }
         }
     }
@@ -189,6 +240,8 @@ export function unMakeBoardMove(board, start, move, previous){
     board[move] = previous;
     return board;
 }
+
+
 
 function evaluateValue(board, team){
     let totalVal = 0;
