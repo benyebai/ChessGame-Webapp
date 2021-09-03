@@ -49,7 +49,7 @@ export function decideBestAiMove(board, team, turnNum, depth, alpha, beta){
     }
 
     let movesAtCurrent = generateAllLegal(board, team, turnNum);
-    let ordered = lazyMoveOrder([...board], movesAtCurrent);
+    let ordered = lazyMoveOrder([...board], movesAtCurrent, depth === biggestDepth);
 
     if(movesAtCurrent === "checkmate") return -100000000;
     if(movesAtCurrent === "stalemate") return 0;

@@ -271,21 +271,29 @@ export class Board extends React.Component {
         if(this.props.gamemode === "ai"){
             resetGlobalVar("black");
 
-            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 6, -1000000, 100000000);
+            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 6, -10000000, 100000000);
             console.log(fuckMe);
+            let fuck1 = fuckMe;
             this.movePieceAi(bestMove[0], bestMove[1]);
 
             /*
             resetGlobalVar("black");
-            orderlessDecideBestAiMove([...fakeBoard], "black", this.state.turnNum, 4, -10000000, 10000000);
+            orderlessDecideBestAiMove([...fakeBoard], "black", this.state.turnNum, 6, -10000000, 10000000);
             console.log(fuckMe);
+            let fuck2 = fuckMe;
+            if(fuck1 < fuck2) {
+                console.log("ordering was good, helped by " + (fuck2 - fuck1).toString());
+                console.log("was originally " + (fuck2).toString())
+            }
             */
+            
         }
         
         socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state});
     }
 
     movePieceAi(from, to){
+        console.log(from, to);
         let fakeBoard = this.state.board;
         if(from == null || to == null){
             //youre ion checkmate
@@ -295,6 +303,25 @@ export class Board extends React.Component {
         if(this.state.myTeam === "black"){
             from = 63 - from;
             to = 63 - to;
+        }
+
+        if(to === "right castle") {
+            fakeBoard[from + 2] = fakeBoard[from];
+            fakeBoard[from + 1] = fakeBoard[from + 3];
+            fakeBoard[from + 1].moved = true;
+            fakeBoard[from + 2].moved = true;
+
+            fakeBoard[from + 3] = "em";
+            fakeBoard[from] = "em";
+        }
+        else if(to === "left castle"){
+            fakeBoard[from - 2] = fakeBoard[from];
+            fakeBoard[from - 1] = fakeBoard[from - 4];
+            fakeBoard[from - 1].moved = true;
+            fakeBoard[from - 2].moved = true;
+
+            fakeBoard[from - 4] = "em";
+            fakeBoard[from] = "em";
         }
 
         if(fakeBoard[from] != "em" && fakeBoard[from].piece == "pawn" && Array.isArray(to)){
@@ -315,9 +342,12 @@ export class Board extends React.Component {
 
         fakeBoard[to] = fakeBoard[from];
         fakeBoard[from] = "em";
+        
 
-        fakeBoard[to].moved = true;
-        fakeBoard[to].movedBefore = true;
+        if(fakeBoard[to] != "em"){
+            fakeBoard[to].moved = true;
+            fakeBoard[to].movedBefore = true;
+        }
 
         if(fakeBoard[to].piece === "pawn"){
             if(Math.abs(to - from) == 16){

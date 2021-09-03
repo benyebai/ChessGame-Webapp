@@ -483,7 +483,7 @@ function generateLegalSlider(pos, board){
     return allMoves;
 }
 
-export function lazyMoveOrder(board, info){
+export function lazyMoveOrder(board, info, imGay){
     //it just gets all moves, loops over them all, and then orders them sorta
     //its not efficient, thus lazy move order
 
@@ -518,17 +518,19 @@ export function lazyMoveOrder(board, info){
 
             //handling en passant/promotuion
             //on pormotion, the moves value gets increased by the piece they are promoting to value
+            let thingsDone = [];
             if(Array.isArray(currentMove)){
                 if(currentMove[0] === "en passant") to = currentMove[1];
                 else to = currentMove[0];
             }
             else{
                 to = currentMove;
+                thingsDone.push(currentMove[1]);
                 switch(currentMove[1]){
-                    case "promote queen": moveValue += queenVal; break;
-                    case "promote bishop": moveValue += bishopVal; break;
-                    case "promote knight": moveValue += knightVal; break;
-                    case "promote rook": moveValue += rookVal; break;
+                    case "promote queen": moveValue += queenVal + 3; break;
+                    case "promote bishop": moveValue += bishopVal + 1; break;
+                    case "promote knight": moveValue += knightVal + 1; break;
+                    case "promote rook": moveValue += rookVal + 2; break;
                 }
             }
 
@@ -555,14 +557,11 @@ export function lazyMoveOrder(board, info){
                 }
             }
 
-            
             //moveValue += pieceCaptureVal - pieceMoveVal;
             if(pieceCaptureVal != 0){
                 //multiply by ten so that non moves are preferred less than captures
+                thingsDone.push(["captured for", (10 * pieceCaptureVal) - pieceMoveVal])
                 moveValue += (10 * pieceCaptureVal) - pieceMoveVal;
-            }
-            else{
-                moveValue -= 1;
             }
 
             let enemyTeam = board[from].team === "white" ? "black" : "white";
@@ -581,7 +580,7 @@ export function lazyMoveOrder(board, info){
             else if(pawnSpot2 != "em" && pawnSpot2.piece === "pawn" && pawnSpot2.team === "enemyTeam"){
                 moveValue -= pieceMoveVal;
             }
-            else if(attackMap[to]) moveValue -= pieceMoveVal;
+            //else if(attackMap[to]) moveValue -= pieceMoveVal;
 
             let toModified = to;
             if(board[from].team === "black") toModified = 63 - toModified;
@@ -593,7 +592,7 @@ export function lazyMoveOrder(board, info){
                 case "king": moveValue += goodKingSpots[toModified] / 100; break;
                 case "pawn": moveValue += goodPawnSpots[toModified] / 100; break;
             }
-
+            
             existingMoves.push([from, currentMove, moveValue]);
         }
     }
@@ -606,6 +605,7 @@ export function lazyMoveOrder(board, info){
     });
     */
 
+    
     for(let i = 0; i < existingMoves.length - 1; i++){
         for(let j = i + 1; j > 0; j--){
             if(existingMoves[j - 1][2] < existingMoves[j][2]){
@@ -613,6 +613,8 @@ export function lazyMoveOrder(board, info){
             }
         }
     }
+    
 
+    //console.log(existingMoves);
     return existingMoves;
 }
