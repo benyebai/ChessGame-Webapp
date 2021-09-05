@@ -266,7 +266,7 @@ export class Board extends React.Component {
         if(this.props.gamemode === "ai"){
             resetGlobalVar();
 
-            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 2, -1000000, 100000000);
+            console.log(decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 6, -100000000, 100000000))
             this.movePieceAi(bestMove[0], bestMove[1]);
         }
         

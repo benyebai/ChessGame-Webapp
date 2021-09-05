@@ -61,10 +61,19 @@ export function decideBestAiMove(board, team, turnNum, depth, alpha, beta){
                 return beta;
             }
 
+            let changed = false
+            if (depth === biggestDepth) {
+                if (evaluation > alpha) {
+                    alpha = evaluation
+                    changed = true
+                }
+            } else {
+                alpha = Math.max(alpha, evaluation)
+            }
 
-            alpha = Math.max(alpha, evaluation)
+            
 
-            if (alpha === evaluation && depth === biggestDepth) {
+            if (changed && depth === biggestDepth) {
                 bestMove = [curr, movesAtCurrent[0][curr][j]];
                 console.log(bestMove);
                 console.log(alpha);
