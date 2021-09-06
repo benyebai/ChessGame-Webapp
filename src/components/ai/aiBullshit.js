@@ -1,6 +1,7 @@
-import { generateAllLegal } from "../boardLogic/moveGenerator";
+import { generateAllLegal, lazyMoveOrder2 } from "../boardLogic/moveGenerator";
 import { lazyMoveOrder } from "../boardLogic/moveGenerator";
 import { goodBishopSpots, goodKnightSpots, goodKingSpots, goodRookSpots, goodPawnSpots } from "../boardLogic/precomputedData";
+import { addBoard } from "./transpositionTableStuff";
 
 const queenVal = 900;
 const bishopVal = 300;
@@ -14,6 +15,8 @@ export var biggestDepth = 0
 var previous = "em";
 export var fuckMe = 0;
 var myTeam = "black";
+var oldMoves = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]];
+var zobristKey = 0;
 
 
 
@@ -26,11 +29,14 @@ var myTeam = "black";
 //ive got no idea how to explain in text form but heres a timestamp of a good explanation https://youtu.be/U4ogK0MIzqk?t=819
 
 
-export function resetGlobalVar(team) {
+export function resetGlobalVar(team, fullReset) {
     bestMove = [];
-    biggestDepth = 0;
     fuckMe = 0;
     myTeam = team;
+    if(fullReset === true){
+        biggestDepth = 0;
+        oldMoves = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]];
+    }
 }
 
 export function decideBestAiMove(board, team, turnNum, depth, alpha, beta){
@@ -85,13 +91,13 @@ export function decideBestAiMove(board, team, turnNum, depth, alpha, beta){
         else alpha = Math.max(alpha, evaluation);
 
         if (changedAlpha && depth === biggestDepth) {
+            console.log(evaluation);
             bestMove = [curr[0], curr[1]];
             //console.log(evaluation);
             //console.log(bestMove);
             //console.log(alpha);
         }
     }
-    
     
     /*
     //old code
@@ -353,8 +359,6 @@ export function unMakeBoardMove(board, start, move, previous){
     return board;
 }
 
-
-
 function evaluateValue(board, team){
     let totalVal = 0;
     for(let i = 0; i < board.length; i++){
@@ -374,4 +378,127 @@ function evaluateValue(board, team){
     }
 
     return totalVal;
+}
+
+export function decideBestAiMoveButBad(board, team, turnNum, depth, alpha, beta){
+    if(fuckMe === 2000000) console.log("youve gone to a depth of 2 million, so im stopping the function");
+    if(fuckMe >= 2000000) return;
+    if(depth === 0){
+        fuckMe += 1;
+        let oppTeam = (team === "white" ? "black" : "white");
+        let mult = 1;
+        if(biggestDepth % 2 == 0) mult = -1;
+        return mult * (evaluateValue(board, team) - evaluateValue(board, oppTeam));
+    } 
+
+    if (depth > biggestDepth) {
+        biggestDepth = depth;
+        console.log("set zobrist key to board");
+    }
+
+    let movesAtCurrent = generateAllLegal(board, team, turnNum);
+    let ordered = lazyMoveOrder2([...board], movesAtCurrent, zobristKey);
+
+    if(movesAtCurrent === "checkmate") return -100000000;
+    if(movesAtCurrent === "stalemate") return 0;
+
+    //console.log(ordered);
+
+    for(let i = 0; i < ordered.length; i++){
+        let curr = ordered[i];
+        let newBoard = makeBoardMove(board, curr[0], curr[1]);
+        console.log("update zobkey");
+        let previousMove = previous;
+        let oppositeTeam = board[curr[0]].team;
+
+        if (oppositeTeam === 'white') {
+            oppositeTeam = 'black';
+        } else {
+            oppositeTeam = 'white';
+        }
+
+        let evaluation = -(decideBestAiMoveButBad(newBoard, oppositeTeam, turnNum + 1, depth - 1, -beta, -alpha));
+
+        unMakeBoardMove(board, curr[0], curr[1], previousMove);
+        console.log("update zobkey");
+
+        if (evaluation >= beta) {
+            return beta;
+        }
+
+        let changedAlpha = false;
+
+        if(evaluation > alpha) {
+            alpha = evaluation;
+
+            console.log("im not finished, need zobkey");
+            addBoard(evaluation, zobristKey, curr, depth);
+
+            if(depth === biggestDepth){
+                changedAlpha = true;
+            }
+        }
+
+        if (changedAlpha && depth === biggestDepth) {
+            //console.log(evaluation);
+            bestMove = [curr[0], curr[1]];
+            //console.log(evaluation);
+            //console.log(bestMove);
+            //console.log(alpha);
+        }
+    }
+    
+    /*
+    //old code
+    //works if you make it
+    for(let i = 0; i < movesAtCurrent[2].length; i++){
+        let curr = movesAtCurrent[2][i];
+        for(let j = 0; j < movesAtCurrent[0][curr].length; j++){
+            let newBoard = makeBoardMove(board, curr, movesAtCurrent[0][curr][j]);
+            let previousMove = previous;
+            let oppositeTeam = board[curr].team;
+
+            if (oppositeTeam === 'white') {
+                oppositeTeam = 'black';
+            } else {
+                oppositeTeam = 'white';
+            }
+
+            let evaluation = -(decideBestAiMove(newBoard, oppositeTeam, turnNum + 1, depth - 1, -beta, -alpha));
+            unMakeBoardMove(board, curr, movesAtCurrent[0][curr][j], previousMove);
+            if (evaluation >= beta) {
+                return beta;
+            }
+
+            let changedAlpha = false;
+
+            if(evaluation > alpha && depth === biggestDepth) {
+                alpha = evaluation;
+                changedAlpha = true;
+            }
+            else alpha = Math.max(alpha, evaluation);
+
+            if (changedAlpha && depth === biggestDepth) {
+                bestMove = [curr, movesAtCurrent[0][curr][j]];
+                //console.log(bestMove);
+                //console.log(alpha);
+            }
+        }
+    }
+    */
+    
+    return alpha
+}
+
+function fakeQuickSort(moves){
+    // this is bubble sort modified so that its quick but not always right
+    //its like right 99 percent of the time so its ok
+    for(let i = 0; i < moves.length - 1; i++){
+        for(let j = i + 1; j > 0; j--){
+            if(moves[j - 1][2] < moves[j][2]){
+                [moves[j - 1], moves[j]] = [moves[j], moves[j - 1]];
+            }
+        }
+    }
+    return moves;
 }

@@ -10,7 +10,7 @@ import { generateAllLegal } from './boardLogic/moveGenerator';
 import { io } from 'socket.io-client';
 import WaitForOther from './waitForOther.js';
 import { convertSeconds } from './convertTime';
-import { biggestDepth, makeBoardMove, unMakeBoardMove } from './ai/aiBullshit';
+import { biggestDepth, decideBestAiMoveButBad, makeBoardMove, unMakeBoardMove } from './ai/aiBullshit';
 import { decideBestAiMove } from './ai/aiBullshit';
 import { bestMove } from './ai/aiBullshit';
 import { resetGlobalVar } from './ai/aiBullshit';
@@ -269,12 +269,17 @@ export class Board extends React.Component {
         });
         
         if(this.props.gamemode === "ai"){
+            
+            /*
             resetGlobalVar("black");
 
-            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 6, -10000000, 100000000);
+            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 2, -10000000, 100000000);
             console.log(fuckMe);
             let fuck1 = fuckMe;
             this.movePieceAi(bestMove[0], bestMove[1]);
+            */
+            
+            
 
             /*
             resetGlobalVar("black");
@@ -286,6 +291,14 @@ export class Board extends React.Component {
                 console.log("was originally " + (fuck2).toString())
             }
             */
+           
+            resetGlobalVar("black", true);
+            for(let i = 1; i < 3; i++){
+                resetGlobalVar("black", false);
+                decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, 6, -10000000, 100000000, 0);
+            }
+            this.movePieceAi(bestMove[0], bestMove[1]);
+            
             
         }
         
