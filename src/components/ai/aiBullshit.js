@@ -17,6 +17,7 @@ export var fuckMe = 0;
 var myTeam = "black";
 var oldMoves = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]];
 var zobristKey = 0;
+export var oldBest = [];
 
 
 
@@ -30,10 +31,12 @@ var zobristKey = 0;
 
 
 export function resetGlobalVar(team, fullReset) {
+    oldBest = bestMove;
     bestMove = [];
     fuckMe = 0;
     myTeam = team;
     if(fullReset === true){
+        oldBest = [];
         biggestDepth = 0;
         oldMoves = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]];
     }
@@ -441,6 +444,112 @@ export function decideBestAiMoveButBad(board, team, turnNum, depth, alpha, beta)
 
         if (changedAlpha && depth === biggestDepth) {
             //console.log(evaluation);
+            bestMove = [curr[0], curr[1]];
+            //console.log(evaluation);
+            //console.log(bestMove);
+            //console.log(alpha);
+        }
+    }
+    
+    /*
+    //old code
+    //works if you make it
+    for(let i = 0; i < movesAtCurrent[2].length; i++){
+        let curr = movesAtCurrent[2][i];
+        for(let j = 0; j < movesAtCurrent[0][curr].length; j++){
+            let newBoard = makeBoardMove(board, curr, movesAtCurrent[0][curr][j]);
+            let previousMove = previous;
+            let oppositeTeam = board[curr].team;
+
+            if (oppositeTeam === 'white') {
+                oppositeTeam = 'black';
+            } else {
+                oppositeTeam = 'white';
+            }
+
+            let evaluation = -(decideBestAiMove(newBoard, oppositeTeam, turnNum + 1, depth - 1, -beta, -alpha));
+            unMakeBoardMove(board, curr, movesAtCurrent[0][curr][j], previousMove);
+            if (evaluation >= beta) {
+                return beta;
+            }
+
+            let changedAlpha = false;
+
+            if(evaluation > alpha && depth === biggestDepth) {
+                alpha = evaluation;
+                changedAlpha = true;
+            }
+            else alpha = Math.max(alpha, evaluation);
+
+            if (changedAlpha && depth === biggestDepth) {
+                bestMove = [curr, movesAtCurrent[0][curr][j]];
+                //console.log(bestMove);
+                //console.log(alpha);
+            }
+        }
+    }
+    */
+    
+    return alpha
+}
+
+export function decideBestAiMoveAspiration(board, team, turnNum, depth, alpha, beta){
+    if(fuckMe === 500000) console.log("youve gone to a depth of 2 million, so im stopping the function");
+    if(fuckMe >= 500000) return "timed out";
+    if(depth === 0){
+        fuckMe += 1;
+        let oppTeam = (team === "white" ? "black" : "white");
+        let mult = 1;
+        if(biggestDepth % 2 == 0) mult = -1;
+        return mult * (evaluateValue(board, team) - evaluateValue(board, oppTeam));
+    } 
+
+    if (depth > biggestDepth) {
+        biggestDepth = depth;
+    }
+
+    let movesAtCurrent = generateAllLegal(board, team, turnNum);
+    let ordered = lazyMoveOrder([...board], movesAtCurrent, depth === biggestDepth);
+
+    if(movesAtCurrent === "checkmate") return -100000000;
+    if(movesAtCurrent === "stalemate") return 0;
+
+    //console.log(ordered);
+
+    for(let i = 0; i < ordered.length; i++){
+        let curr = ordered[i];
+        let newBoard = makeBoardMove(board, curr[0], curr[1]);
+        let previousMove = previous;
+        let oppositeTeam = board[curr[0]].team;
+
+        if (oppositeTeam === 'white') {
+            oppositeTeam = 'black';
+        } else {
+            oppositeTeam = 'white';
+        }
+
+        let evaluation = decideBestAiMoveAspiration(newBoard, oppositeTeam, turnNum + 1, depth - 1, -beta, -alpha);
+        if(evaluation === "timed out"){   
+            return "timed out";
+        } 
+        else evaluation *= -1;
+
+        unMakeBoardMove(board, curr[0], curr[1], previousMove);
+
+        if (evaluation >= beta) {
+            return beta;
+        }
+
+        let changedAlpha = false;
+
+        if(evaluation > alpha && depth === biggestDepth) {
+            alpha = evaluation;
+            changedAlpha = true;
+        }
+        else alpha = Math.max(alpha, evaluation);
+
+        if (changedAlpha && depth === biggestDepth) {
+            console.log(evaluation);
             bestMove = [curr[0], curr[1]];
             //console.log(evaluation);
             //console.log(bestMove);

@@ -10,7 +10,7 @@ import { generateAllLegal } from './boardLogic/moveGenerator';
 import { io } from 'socket.io-client';
 import WaitForOther from './waitForOther.js';
 import { convertSeconds } from './convertTime';
-import { biggestDepth, decideBestAiMoveButBad, makeBoardMove, unMakeBoardMove } from './ai/aiBullshit';
+import { biggestDepth, decideBestAiMoveAspiration, decideBestAiMoveButBad, makeBoardMove, oldBest, unMakeBoardMove } from './ai/aiBullshit';
 import { decideBestAiMove } from './ai/aiBullshit';
 import { bestMove } from './ai/aiBullshit';
 import { resetGlobalVar } from './ai/aiBullshit';
@@ -270,14 +270,41 @@ export class Board extends React.Component {
         
         if(this.props.gamemode === "ai"){
             
-            /*
-            resetGlobalVar("black");
+            
+            resetGlobalVar("black", true);
 
-            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 2, -10000000, 100000000);
+            /*
+            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 6, -10000000, 100000000);
             console.log(fuckMe);
             let fuck1 = fuckMe;
             this.movePieceAi(bestMove[0], bestMove[1]);
             */
+            
+
+            let alpha = -10000000;
+            let beta = 10000000;
+            let window = 20;
+            for (let i = 1; i < 10;) {
+                resetGlobalVar("black");
+
+                let val = decideBestAiMoveAspiration([...fakeBoard], 'black', this.state.turnNum, i, alpha, beta);
+
+                if (val === "timed out"){
+                    console.log(i);
+                    break;
+                }
+                if ((val <= alpha) || (val >= beta)) {
+                    alpha = -10000000;    // We fell outside the window, so try again with a
+                    beta = 10000000;      //  full-width window (and the same depth).
+                    continue;
+                }
+
+                alpha = val - 100;  // Set up the window for the next iteration.
+                beta = val + 100;
+                i++;
+            }
+            this.movePieceAi(oldBest[0], oldBest[1]);
+            
             
             
 
@@ -292,12 +319,14 @@ export class Board extends React.Component {
             }
             */
            
+            /*
             resetGlobalVar("black", true);
             for(let i = 1; i < 3; i++){
                 resetGlobalVar("black", false);
                 decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, 6, -10000000, 100000000, 0);
             }
             this.movePieceAi(bestMove[0], bestMove[1]);
+            */
             
             
         }
