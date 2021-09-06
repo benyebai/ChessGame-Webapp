@@ -16,6 +16,7 @@ import { bestMove } from './ai/aiBullshit';
 import { resetGlobalVar } from './ai/aiBullshit';
 import { fuckMe } from './ai/aiBullshit';
 import { orderlessDecideBestAiMove } from './ai/aiBullshit';
+import { yes } from './ai/zobristHashGenerator';
 
 var socket = io("http://localhost:3333/");
 var alreadyJoined = false;
@@ -31,6 +32,7 @@ export class Board extends React.Component {
         console.log(convertSeconds(123));
         console.log(convertSeconds(1500));
         console.log(convertSeconds(600));
+        console.log(yes())
         super(props);
         if(this.props.gamemode === "local" || this.props.gamemode === "ai"){
             finishedJoining = true;
