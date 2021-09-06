@@ -14,6 +14,8 @@ import { biggestDepth, makeBoardMove, unMakeBoardMove } from './ai/aiBullshit';
 import { decideBestAiMove } from './ai/aiBullshit';
 import { bestMove } from './ai/aiBullshit';
 import { resetGlobalVar } from './ai/aiBullshit';
+import { fuckMe } from './ai/aiBullshit';
+import { orderlessDecideBestAiMove } from './ai/aiBullshit';
 
 var socket = io("http://localhost:3333/");
 var alreadyJoined = false;
@@ -89,8 +91,10 @@ export class Board extends React.Component {
             whitesTurn: true,
             choosingPromotion : -1,
             gamemode: this.props.gamemode,
-            secondsLeftWhite : 1000,
-            secondsLeftBlack : 1000
+            secondsLeftWhite : 600,
+            secondsLeftBlack : 600,
+            gaming: true,
+            winner : null
         }
 
         this.movePiece = this.movePiece.bind(this);
@@ -101,6 +105,7 @@ export class Board extends React.Component {
     }
 
     movePiece(from, to){
+
         if(this.state.myTeam === "black"){
             from = 63 - from;
             to = 63 - to;
@@ -232,7 +237,7 @@ export class Board extends React.Component {
 
         let currentTurn = this.state.turnNum;
 
-        if(this.props.gamemode !== "multiplayer"){
+        if(this.props.gamemode === "local"){
 
             if(this.state.whitesTurn){
                 this.timerBlack = setInterval(() => {
@@ -262,12 +267,23 @@ export class Board extends React.Component {
             whitesTurn : !prevState.whitesTurn
             });
         });
-
+        
         if(this.props.gamemode === "ai"){
-            resetGlobalVar();
+            resetGlobalVar("black");
 
+<<<<<<< HEAD
             console.log(decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 6, -100000000, 100000000))
+=======
+            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 6, -1000000, 100000000);
+            console.log(fuckMe);
+>>>>>>> 31ba67f97287c1e0561bcf0330e532fb1e3a8021
             this.movePieceAi(bestMove[0], bestMove[1]);
+
+            /*
+            resetGlobalVar("black");
+            orderlessDecideBestAiMove([...fakeBoard], "black", this.state.turnNum, 4, -10000000, 10000000);
+            console.log(fuckMe);
+            */
         }
         
         socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state});
@@ -286,11 +302,17 @@ export class Board extends React.Component {
         }
 
         if(fakeBoard[from] != "em" && fakeBoard[from].piece == "pawn" && Array.isArray(to)){
-            switch(to[1]){
-                case "promote queen": fakeBoard[from].piece = "queen"; break;
-                case "promote rook": fakeBoard[from].piece = "rook"; break;
-                case "promote bishop": fakeBoard[from].piece = "bishop"; break;
-                case "promote knight": fakeBoard[from].piece = "knight"; break;
+            if(to[0] === "en passant"){
+                let pawnDirection = (to[1] - from) / Math.abs(to[1] - from);
+                fakeBoard[to[1] - (8 * pawnDirection)] = "em";
+            }
+            else{
+                switch(to[1]){
+                    case "promote queen": fakeBoard[from].piece = "queen"; break;
+                    case "promote rook": fakeBoard[from].piece = "rook"; break;
+                    case "promote bishop": fakeBoard[from].piece = "bishop"; break;
+                    case "promote knight": fakeBoard[from].piece = "knight"; break;
+                }
             }
             to = to[0];
         }
@@ -406,10 +428,10 @@ export class Board extends React.Component {
         //if the start and stop is on the same row, required due to quriks of making board 1 layer
         if(Math.floor(stop / 8) == Math.floor(start / 8)) return false;
         if(Math.abs(Math.floor(stop / 8) - Math.floor(start/8)) == 2){
-            if(stop === start + (16 * movementDir) && board[stop] === "em"){
+            if(stop === start + (16 * movementDir) && board[stop] === "em" && board[stop - (8 * movementDir)] === "em"){
                 return "double";
             }
-            else return false
+            else return false;
         }
 
         //vertical movement
@@ -548,7 +570,6 @@ export class Board extends React.Component {
 
         socket.emit("sendInfo", {"room" : this.props.match.params.id, state : fakeState});
 
-        //functions also does the things that the movepiece didnt do since promoting a pawn pauses the game
         this.setState(prevState => {
             return({
             "board": fakeBoard,
@@ -557,6 +578,30 @@ export class Board extends React.Component {
             choosingPromotion : -1
             });
         });
+
+        if(this.props.gamemode === "ai"){
+            resetGlobalVar();
+
+            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 3, -10000000, 100000000);
+            this.movePieceAi(bestMove[0], bestMove[1]);
+
+            
+            this.setState(prevState => {
+                return({
+                whitesTurn : !prevState.whitesTurn,
+                });
+            });
+        }
+        //functions also does the things that the movepiece didnt do since promoting a pawn pauses the game
+
+    }
+
+    whiteWins(){
+
+    }
+
+    blackWins(){
+
     }
 
     componentWillMount() {
@@ -631,6 +676,8 @@ export class Board extends React.Component {
         });
     }
 
+
+
     render() {
         if(!finishedJoining) return(
             <div></div>
@@ -693,15 +740,24 @@ export class Board extends React.Component {
             entireBoard.push(<div style = {{display:"flex"}}>{currentRow}</div>);
         }
 
+        let fuck = <div></div>;
+        if(!this.state.gaming){
+            let winner = this.state.winner;
+            fuck = (
+            <div>
+                <h1>{winner} wins</h1>
+            </div>);
+        }
+
         return(
             <div style = {{width:"100%", height:"100%", display:"flex"}}>
             <CustomDragLayer />
                 <div>
                     {entireBoard}
                 </div>
-            <h1>white {this.state.secondsLeftWhite} <br /><br /> black {this.state.secondsLeftBlack}</h1>
+            {this.props.gamemode !== "ai" ? <h1>white {convertSeconds(this.state.secondsLeftWhite)} <br /><br /> black {convertSeconds(this.state.secondsLeftBlack)}</h1> : <div />}
             
-            <h1></h1>
+            {fuck}
             </div>
         );
     }

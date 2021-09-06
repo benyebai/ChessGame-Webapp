@@ -1,6 +1,12 @@
+//i love copypasting code and then rewriting it
+//this is based entirely off of the boardlogics moveGenerator.js
+//instead of creating a board and showing the moves from there, it instead just shows the raw data of the moves
+//these moves are [from, to], or special moves like "castle right" or [from, ["en passant", to]]
+//there will be several lists where they are stored, ordered from best moves lsit to worst moves list
+//this is so alpha beta pruning good
+
 import { allowedDir, knightMoves, rookMoves, bishopMoves, queenMoves, kingMoves } from "./precomputedData";
 import { checkPinned } from "./checkPinned";
-import { goodBishopSpots, goodKnightSpots, goodKingSpots, goodRookSpots, goodPawnSpots } from "./precomputedData";
 
 var kingDoubleCheck = false;
 var defaultAttackMap = [];
@@ -109,11 +115,11 @@ export function generateAllLegal(boardState, whosTeam, turnNum){
         if(kingInCheck){
             console.log("checkmate");
             console.log(attackMap);
-            console.log(dangerSquares);
             return "checkmate";
         }
         else return "stalemate";
     }
+
     return [allLegalMoves, totalMovesFound, alliedTeam];
 }
 
@@ -481,138 +487,4 @@ function generateLegalSlider(pos, board){
     }
 
     return allMoves;
-}
-
-export function lazyMoveOrder(board, info){
-    //it just gets all moves, loops over them all, and then orders them sorta
-    //its not efficient, thus lazy move order
-
-    let moves = info[0];
-    let where = info[2];
-
-    let existingMoves = [];
-
-    let pawnVal = 1;
-    let bishopVal = 3;
-    let knightVal = 3;
-    let rookVal = 5;
-    let queenVal = 9;
-    let kingVal = 0;
-
-    if(info === "checkmate" || info === "stalemate") return [];
-
-    for(let i = 0; i < where.length; i++){
-        for(let j = 0; j < moves[where[i]].length; j++){
-            let currentMove = moves[where[i]][j];
-            let moveValue = 0;
-
-            //castling is always better then a move that does nothing, therefore value of 1
-            if(currentMove === "right castle" || currentMove === "left castle") 
-            {
-                existingMoves.push([where[i], currentMove, 2]);
-                continue;
-            }
-
-            let from = where[i];
-            let to = 0;
-
-            //handling en passant/promotuion
-            //on pormotion, the moves value gets increased by the piece they are promoting to value
-            if(Array.isArray(currentMove)){
-                if(currentMove[0] === "en passant") to = currentMove[1];
-                else to = currentMove[0];
-            }
-            else{
-                to = currentMove;
-                switch(currentMove[1]){
-                    case "promote queen": moveValue += queenVal; break;
-                    case "promote bishop": moveValue += bishopVal; break;
-                    case "promote knight": moveValue += knightVal; break;
-                    case "promote rook": moveValue += rookVal; break;
-                }
-            }
-
-            //on find value of piece being captured and piece that is moving
-            let pieceCaptureVal = 0;
-            let pieceMoveVal = 0;
-            if(board[to] != "em"){
-                switch(board[to].piece){
-                    case "pawn": pieceCaptureVal = pawnVal; break;
-                    case "bishop": pieceCaptureVal = bishopVal; break;
-                    case "knight": pieceCaptureVal = knightVal; break;
-                    case "rook": pieceCaptureVal = rookVal; break;
-                    case "queen": pieceCaptureVal = queenVal; break;
-                }
-            }
-
-            if(board[from] != "em"){
-                switch(board[from].piece){
-                    case "pawn": pieceMoveVal = pawnVal; break;
-                    case "bishop": pieceMoveVal = bishopVal; break;
-                    case "knight": pieceMoveVal = knightVal; break;
-                    case "rook": pieceMoveVal = rookVal; break;
-                    case "queen": pieceMoveVal = queenVal; break;
-                }
-            }
-
-            
-            //moveValue += pieceCaptureVal - pieceMoveVal;
-            if(pieceCaptureVal != 0){
-                //multiply by ten so that non moves are preferred less than captures
-                moveValue += (10 * pieceCaptureVal) - pieceMoveVal;
-            }
-            else{
-                moveValue -= 1;
-            }
-
-            let enemyTeam = board[from].team === "white" ? "black" : "white";
-            let pawnDirection = 1;
-            if(enemyTeam === "white") pawnDirection = -1;
-
-            let pawnSpot = Math.floor((to + 7) / 8) === 1 ? board[to + (7 * pawnDirection)] : "em";
-            let pawnSpot2 = Math.floor((to + 9) / 8) === 1 ? board[to + (9 * pawnDirection)] : "em";
-
-            if(to + (7 * pawnDirection) < 0 || to + (7 * pawnDirection) > 63) pawnSpot = "em";
-            if(to + (9 * pawnDirection) < 0 || to + (9 * pawnDirection) > 63) pawnSpot2 = "em";
-
-            if(pawnSpot != "em" && pawnSpot.piece === "pawn" && pawnSpot.team === "enemyTeam"){
-                moveValue -= pieceMoveVal;
-            }
-            else if(pawnSpot2 != "em" && pawnSpot2.piece === "pawn" && pawnSpot2.team === "enemyTeam"){
-                moveValue -= pieceMoveVal;
-            }
-            else if(attackMap[to]) moveValue -= pieceMoveVal;
-
-            let toModified = to;
-            if(board[from].team === "black") toModified = 63 - toModified;
-
-            switch(board[from].piece){
-                case "bishop": moveValue += goodBishopSpots[toModified] / 100; break;
-                case "rook": moveValue += goodRookSpots[toModified] / 100; break;
-                case "knight": moveValue += goodKnightSpots[toModified] / 100; break;
-                case "king": moveValue += goodKingSpots[toModified] / 100; break;
-                case "pawn": moveValue += goodPawnSpots[toModified] / 100; break;
-            }
-
-            existingMoves.push([from, currentMove, moveValue]);
-        }
-    }
-    //from here sort
-    /*
-    existingMoves = existingMoves.sort((a, b) => {
-        if(a[2] > b[2]) return -1;
-        else if(a[2] < b[2]) return 1;
-        return 0;
-    });
-    */
-
-    for(let i = 0; i < existingMoves.length - 1; i++){
-        for(let j = i + 1; j > 0; j--){
-            if(existingMoves[j - 1][2] < existingMoves[j][2]){
-                [existingMoves[j - 1], existingMoves[j]] = [existingMoves[j], existingMoves[j - 1]];
-            }
-        }
-    }
-
-    return existingMoves;
 }

@@ -2,6 +2,7 @@ const { SSL_OP_COOKIE_EXCHANGE } = require('constants');
 const express = require('express');
 const app = express();
 const http = require('http');
+const { TabContent } = require('react-bootstrap');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 
@@ -72,7 +73,6 @@ io.on('connection', (socket) => {
     else{
       res("try again");
     }
-
   });
 
   socket.on('disconnecting', () => {
@@ -93,11 +93,12 @@ io.on('connection', (socket) => {
         return;
       }
     }
+
   });
 
   socket.on("sendInfo", (info) => {
-    io.to(info.room).emit("changeState", info.state);
     changeBoard(info.state, socket);
+    io.to(info.room).emit("changeState", info.state);
   });
 
 });
@@ -107,12 +108,17 @@ function changeBoard(state, socketInfo){
   for(roomId of socketInfo.rooms);
 
   if(roomIds[roomId] != null){
+    oldState = roomIds[roomId].boardState;
     if(roomIds[roomId].boardState == null){
       roomIds[roomId].boardState = state;
     }
     else{
-      if(roomIds[roomId].boardState.turnNum < state.turnNum){
+      if(roomIds[roomId].boardState.turnNum <= state.turnNum){
         roomIds[roomId].boardState = state;
+
+        roomIds[roomId].boardState.secondsLeftBlack = Math.min(oldState.secondsLeftBlack, state.secondsLeftBlack);
+        roomIds[roomId].boardState.secondsLeftWhite = Math.min(oldState.secondsLeftWhite, state.secondsLeftWhite);
+        console.log(roomIds[roomId].boardState);
       }
     }
   }
