@@ -1,9 +1,11 @@
-let generatedNums = []
+
+
+export var generatedNums = []
 let usedNum = [1, 2]
 
 let blackTeam = 2
 let whiteTeam = 1
-export function yes() {
+export function generateRandomNumsZobrist() {
 for (let i = 0; i < 64; i++) {
     let array = {}
 
@@ -90,12 +92,13 @@ export function findingHash(board, turnNum, team) {
     for (let i = 1; i < willXor.length; i++) {
         result = result ^ willXor[i]
     }
-
+    
     if (team === 'white') {
-        result = result^whiteTeam
+        result = result^whiteTeam   
     } else {
         result = result^blackTeam
     }
+    
 
     return result 
 }
