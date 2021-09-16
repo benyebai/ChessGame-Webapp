@@ -10,13 +10,13 @@ import { generateAllLegal } from './boardLogic/moveGenerator';
 import { io } from 'socket.io-client';
 import WaitForOther from './waitForOther.js';
 import { convertSeconds } from './convertTime';
-import { biggestDepth, decideBestAiMoveAspiration, decideBestAiMoveButBad, makeBoardMove, oldBest, unMakeBoardMove } from './ai/aiBullshit';
+import { biggestDepth, decideBestAiMoveAspiration, decideBestAiMoveButBad, imTrans, makeBoardMove, oldBest, unMakeBoardMove } from './ai/aiBullshit';
 import { decideBestAiMove } from './ai/aiBullshit';
 import { bestMove } from './ai/aiBullshit';
 import { resetGlobalVar } from './ai/aiBullshit';
 import { fuckMe } from './ai/aiBullshit';
 import { orderlessDecideBestAiMove } from './ai/aiBullshit';
-import { yes } from './ai/zobristHashGenerator';
+import { findingHash, generateRandomNumsZobrist} from './ai/zobristHashGenerator';
 
 var socket = io("http://localhost:3333/");
 var alreadyJoined = false;
@@ -32,7 +32,7 @@ export class Board extends React.Component {
         console.log(convertSeconds(123));
         console.log(convertSeconds(1500));
         console.log(convertSeconds(600));
-        console.log(yes())
+        console.log(generateRandomNumsZobrist())
         super(props);
         if(this.props.gamemode === "local" || this.props.gamemode === "ai"){
             finishedJoining = true;
@@ -272,43 +272,19 @@ export class Board extends React.Component {
         
         if(this.props.gamemode === "ai"){
             
-            
             resetGlobalVar("black", true);
 
-            /*
-            decideBestAiMove([...fakeBoard], 'black', this.state.turnNum, 6, -10000000, 100000000);
+            
+            let returnVal = decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, 4, -10000000, 100000000);
             console.log(fuckMe);
+            //console.log(imTrans);
             let fuck1 = fuckMe;
+            if(returnVal === "failed") decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, 3, -10000000, 100000000);
             this.movePieceAi(bestMove[0], bestMove[1]);
-            */
-            
-
-            let alpha = -10000000;
-            let beta = 10000000;
-            let window = 20;
-            for (let i = 1; i < 10;) {
-                resetGlobalVar("black");
-
-                let val = decideBestAiMoveAspiration([...fakeBoard], 'black', this.state.turnNum, i, alpha, beta);
-
-                if (val === "timed out"){
-                    console.log(i);
-                    break;
-                }
-                if ((val <= alpha) || (val >= beta)) {
-                    alpha = -10000000;    // We fell outside the window, so try again with a
-                    beta = 10000000;      //  full-width window (and the same depth).
-                    continue;
-                }
-
-                alpha = val - 100;  // Set up the window for the next iteration.
-                beta = val + 100;
-                i++;
-            }
-            this.movePieceAi(oldBest[0], oldBest[1]);
             
             
-            
+            //console.log(findingHash([...fakeBoard], this.state.turnNum, "black"));
+            //console.log(findingHash([...fakeBoard], this.state.turnNum, "black"));
 
             /*
             resetGlobalVar("black");
@@ -323,21 +299,24 @@ export class Board extends React.Component {
            
             /*
             resetGlobalVar("black", true);
-            for(let i = 1; i < 3; i++){
+            for(let i = 1; i < 10; i++){
                 resetGlobalVar("black", false);
-                decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, 6, -10000000, 100000000, 0);
+                let returnVal = decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, i, -10000000, 100000000, 0);
+                if(returnVal === "failed"){ console.log(i); break; }
             }
-            this.movePieceAi(bestMove[0], bestMove[1]);
+            this.movePieceAi(oldBest[0], oldBest[1]);
+            console.log(fuckMe);
+            console.log(imTrans);
+            
+            console.log(oldBest[0], oldBest[1]);
             */
-            
-            
         }
         
         socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state});
     }
 
     movePieceAi(from, to){
-        console.log(from, to);
+        //console.log(from, to);
         let fakeBoard = this.state.board;
         if(from == null || to == null){
             //youre ion checkmate

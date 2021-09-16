@@ -1,9 +1,18 @@
 //im going to cry this is hard
-let cry = {depth:1, flag:"either exact, alpha, or beta", value: 16, best: [1, 17]};
+
+//i love sebastian lague so much that i would suck him off if he asked me to
+//his code is incredibly readable and makes sense. you arent getting any of that here
+//https://github.com/SebLague/Chess-AI/blob/main/Assets/Scripts/Core/TranspositionTable.cs
+
+
 export var transTable = {};
 
-function addBoardFuckYou(depth, val, zobKey, move, flag){
-    if(transTable[zobKey] != null && transTable[zobKey].depth <= depth){
+export function resetTransTable(){
+    transTable = {};
+}
+
+export function recordHash(depth, val, zobKey, move, flag){
+    if(transTable[zobKey] != null){
         return;
     }
     transTable[zobKey] = {
@@ -14,14 +23,14 @@ function addBoardFuckYou(depth, val, zobKey, move, flag){
     }
 }
 
-function searchForBoardFuckYou(zobKey, alpha, beta, depth){
+export function probeHash(zobKey, alpha, beta, depth){
     let entry = transTable[zobKey]
 
     if(entry != null){
         if(entry.depth >= depth){
             if(entry.flag === "exact") return entry;
-            else if(entry.flag === "alpha" && entry.val <= alpha) return entry;
-            else if(entry.flag === "beta" && entry.val <= beta) return entry;
+            else if(entry.flag === "alpha" && entry.val <= alpha) return alpha;
+            else if(entry.flag === "beta" && entry.val <= beta) return beta;
         }
     }
     return "failed";

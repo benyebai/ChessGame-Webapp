@@ -285,7 +285,7 @@ function generateLegalKing(pos, board){
 
     if(board[pos + 3] != "em" && board[pos + 3].piece === "rook" && board[pos + 3].moved === false){
         if(board[pos + 1] === "em" && board[pos + 2] === "em"){
-            if(!attackMap[pos + 1] && !attackMap[pos + 2])finishedData.push("right castle");      
+            if(!attackMap[pos + 1] && !attackMap[pos + 2]) finishedData.push("right castle");
         }
     }
     if(board[pos - 4] != "em" && board[pos - 4].piece === "rook" && board[pos - 4].moved === false){
@@ -639,7 +639,10 @@ export function lazyMoveOrder2(board, info, zobKey){
     if(info === "checkmate" || info === "stalemate") return [];
 
     //console.log("im unfinished, need zobkey");
-    if(transTable[zobKey] != null) existingMoves.push(transTable[zobKey]);
+    //console.log(transTable);
+    if(transTable[zobKey] != null) {
+        if(transTable[zobKey].move != null) existingMoves.push(transTable[zobKey].move);
+    }
 
     for(let i = 0; i < where.length; i++){
         for(let j = 0; j < moves[where[i]].length; j++){
