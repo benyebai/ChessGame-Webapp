@@ -93,10 +93,11 @@ export class Board extends React.Component {
             whitesTurn: true,
             choosingPromotion : -1,
             gamemode: this.props.gamemode,
-            secondsLeftWhite : 600,
-            secondsLeftBlack : 600,
+            secondsLeftWhite : this.props.startingTime,
+            secondsLeftBlack : this.props.startingTime,
             gaming: true,
-            winner : null
+            winner : null,
+            myTeam : this.props.myTeam
         }
 
         this.movePiece = this.movePiece.bind(this);
@@ -245,7 +246,8 @@ export class Board extends React.Component {
                 this.timerBlack = setInterval(() => {
                     this.setState(state => ({
                     secondsLeftBlack : state.secondsLeftBlack - 1
-                    })); console.log(this.state.secondsLeftBlack);
+                    }));
+                    if(this.state.secondsLeftBlack === 0) this.checkmate("white");
                 }, 1000);
                 clearInterval(this.timerWhite);
             }
@@ -253,7 +255,8 @@ export class Board extends React.Component {
                 this.timerWhite = setInterval(() => {
                     this.setState(state => ({
                     secondsLeftWhite : state.secondsLeftWhite - 1
-                    })); console.log(this.state.secondsLeftWhite);
+                    }));
+                    if(this.state.secondsLeftWhite === 0) this.checkmate("black");
                 }, 1000);
                 clearInterval(this.timerBlack);
             }
@@ -273,14 +276,20 @@ export class Board extends React.Component {
         if(this.props.gamemode === "ai"){
             
             resetGlobalVar("black", true);
-
             
-            let returnVal = decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, 4, -10000000, 100000000);
+            /*
+            let returnVal = 0;
+            for(let i = 1; i < 10; i++){
+                resetGlobalVar("black", true);
+                let returnVal = decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, i, -10000000, 100000000);
+                if(returnVal === "failed") {console.log(i); break;}
+                oldBest = [...bestMove];
+            }
+            //if(returnVal === "failed") decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, 3, -10000000, 100000000);
+            this.movePieceAi(oldBest[0], oldBest[1]);
             console.log(fuckMe);
-            //console.log(imTrans);
-            let fuck1 = fuckMe;
-            if(returnVal === "failed") decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, 3, -10000000, 100000000);
-            this.movePieceAi(bestMove[0], bestMove[1]);
+            console.log(imTrans);
+            */
             
             
             //console.log(findingHash([...fakeBoard], this.state.turnNum, "black"));
@@ -296,23 +305,40 @@ export class Board extends React.Component {
                 console.log("was originally " + (fuck2).toString())
             }
             */
-           
-            /*
+    
+            
             resetGlobalVar("black", true);
             for(let i = 1; i < 10; i++){
                 resetGlobalVar("black", false);
                 let returnVal = decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, i, -10000000, 100000000, 0);
-                if(returnVal === "failed"){ console.log(i); break; }
+                if(returnVal === "failed"){ console.log(i - 1); break; }
             }
             this.movePieceAi(oldBest[0], oldBest[1]);
-            console.log(fuckMe);
-            console.log(imTrans);
             
-            console.log(oldBest[0], oldBest[1]);
-            */
         }
         
-        socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state});
+        if(this.props.gamemode === "multiplayer"){
+            socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state});
+        }
+
+        let enemyTeam = this.state.whiteToMove ? "white" : "black";
+        let movingTeam = !this.state.whiteToMove ? "white" : "black";
+
+        let potentialEnemyMoves = generateAllLegal(fakeBoard, enemyTeam, this.state.turnNum);
+        if(potentialEnemyMoves == "checkmate") this.checkmate(movingTeam);
+        if(potentialEnemyMoves == "stalemate") this.stalemate();
+    }
+
+    checkmate(who){
+        console.log("checkmate " + who + " wins");
+        clearInterval(this.timerBlack);
+        clearInterval(this.timerWhite);
+    }
+
+    stalemate(){
+        console.log("stalemate");
+        clearInterval(this.timerBlack);
+        clearInterval(this.timerWhite);
     }
 
     movePieceAi(from, to){
@@ -664,7 +690,7 @@ export class Board extends React.Component {
         if(!alreadyJoined && this.state.gamemode === "multiplayer"){
             alreadyJoined = true;
 
-            socket.emit("joinRoom", this.props.match.params.id, "white", (returnData) =>{
+            socket.emit("joinRoom", this.props.match.params.id, this.props.myTeam, (returnData) =>{
                 finishedJoining = true;
 
                 if(returnData == "room full"){

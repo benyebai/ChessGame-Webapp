@@ -28,7 +28,7 @@ for(let i = 0; i < 64; i++){
     pinnedPositionsDefault.push(false);
 }
 
-export function generateAllLegal(boardState, whosTeam, turnNum){
+export function generateAllLegal(boardState, whosTeam, turnNum, depth){
     // returns a board, but each square either say that its empty, or it says where the piece on that square can move
     //takes in the board state similar to how its set up in board.js
 
@@ -82,8 +82,9 @@ export function generateAllLegal(boardState, whosTeam, turnNum){
 
     if(kingDoubleCheck){
         if(totalMovesFound == 0){
-            return "checkmate";
             console.log("checkmate");
+            return "checkmate";
+            
         }
         return [allLegalMoves, totalMovesFound, [alliedKing]];
     }
@@ -108,9 +109,7 @@ export function generateAllLegal(boardState, whosTeam, turnNum){
 
     if(totalMovesFound == 0){
         if(kingInCheck){
-            console.log("checkmate");
-            console.log(attackMap);
-            console.log(dangerSquares);
+            //console.log(boardState);
             return "checkmate";
         }
         else return "stalemate";
@@ -641,7 +640,7 @@ export function lazyMoveOrder2(board, info, zobKey){
     //console.log("im unfinished, need zobkey");
     //console.log(transTable);
     if(transTable[zobKey] != null) {
-        if(transTable[zobKey].move != null) existingMoves.push(transTable[zobKey].move);
+        //if(transTable[zobKey].move != null) existingMoves.push(transTable[zobKey].move);
     }
 
     for(let i = 0; i < where.length; i++){
