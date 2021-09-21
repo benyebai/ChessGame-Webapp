@@ -2,9 +2,12 @@ import React from 'react';
 import './App.css';
 import "./menu.css";
 import { io } from 'socket.io-client';
-import { setTimes } from './App';
 
 var socket = io("http://localhost:3333/");
+
+export var amountTime = 10;
+export var amountIncrement = 0;
+export var whichTeam = "black";
 
 class Menu extends React.Component {
     constructor(props){
@@ -22,10 +25,22 @@ class Menu extends React.Component {
 
         this.changeSliderTime = this.changeSliderTime.bind(this);
         this.changeSliderIncrement = this.changeSliderIncrement.bind(this);
+        this.moveToAi = this.moveToAi.bind(this);
+        this.moveToLocal = this.moveToLocal.bind(this);
+        this.setSessionStorage = this.setSessionStorage.bind(this);
+    }
+
+    setSessionStorage(){
+        window.sessionStorage.setItem("amountTime", this.state.actualSliderValTime * 60);
+        window.sessionStorage.setItem("amountIncrement", this.state.actualSliderValIncrement);
+        window.sessionStorage.setItem("whichTeam", this.state.teamChosen);
+
+        console.log(window.sessionStorage.getItem("amountTime"));
     }
 
     generateRoom(){
         let randomId = parseInt(Math.random() * 1000000000);
+        this.setSessionStorage()
 
         socket.emit("createRoom", (randomId), (returnData) =>{
             console.log(returnData);
@@ -35,20 +50,23 @@ class Menu extends React.Component {
     }
 
     moveToLocal(){
+        this.setSessionStorage()
         window.location.assign("/local");
     }
 
     moveToAi(){
+        this.setSessionStorage()
         window.location.assign("/ai");
     }
 
     changeSliderTime(event){
         //event is number from 1-100, percentage filled from left is event
         //choose index based on percentage
+        
         let possibleSteps = 
         [
             "1/4", "1/2", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30,
-            35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180
+            35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, "Infinity"
         ];
         let howMany = possibleSteps.length;
         let indexToChoose = Math.round((howMany - 1) * (event.target.value/100));

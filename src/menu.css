@@ -59,7 +59,7 @@
 .selectedButton {
     outline: 0;
     border-radius: 1vw;
-    box-shadow: 0 0 0 0.2vw rgb(126, 182, 199);
+    box-shadow: 0 0 0 0.3vw rgb(126, 182, 199);
 }
 
 .fillToContainerImage {
@@ -73,4 +73,17 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.buttonV2{
+    width:7vw;
+    height:7vw;
+    padding: 1vw;
+    border: 0;
+    margin: 0;
+    border-radius: 1vw;
+}
+
+.buttonV2:hover{
+    background-color:red;
 }

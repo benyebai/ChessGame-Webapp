@@ -9,16 +9,15 @@ import {BrowserRouter as Router, Route, Switch} from "react-router-dom";
 
 //im an autist, only way i found to alter the time values for chess from menu.js
 //is using exported funcs to change the varaibles
-export function setTimes(amount, restore, team){
-  amountTime = amount;
-  amountRestored = restore;
-  myTeam = team;
-  if(team == null) myTeam = "white";
-}
 
-export var amountTime = 600;
-export var amountRestored = 0;
-export var myTeam = "white";
+var amountTime = window.sessionStorage.getItem("amountTime");
+if(amountTime == null) amountTime = 600;
+
+var amountIncrement =  window.sessionStorage.getItem("amountIncrement");
+if(amountIncrement == null) amountIncrement = 0;
+
+var whichTeam = window.sessionStorage.getItem("whichTeam");
+if(whichTeam == null) whichTeam = "white";
 
 class App extends React.Component {
 
@@ -35,8 +34,8 @@ class App extends React.Component {
                 {...props}
                 gamemode = "multiplayer"
                 startingTime = {amountTime}
-                timeRestored = {amountRestored}
-                myTeam = {myTeam}
+                timeRestored = {amountIncrement}
+                myTeam = {whichTeam}
               />)}/>
 
               <Route exact path="/local" render={(props) => (
@@ -44,8 +43,8 @@ class App extends React.Component {
                 {...props}
                 gamemode = "local"
                 startingTime = {amountTime} 
-                timeRestored = {amountRestored}
-                myTeam = {myTeam}
+                timeRestored = {amountIncrement}
+                myTeam = {whichTeam}
                 />)}/>
 
               <Route exact path="/ai" render={(props) => (
@@ -53,8 +52,8 @@ class App extends React.Component {
                 {...props}
                 gamemode = "ai"
                 startingTime = {amountTime} 
-                timeRestored = {amountRestored}
-                myTeam = {myTeam}
+                timeRestored = {amountIncrement}
+                myTeam = {whichTeam}
               />)} />
 
               <Route exact path="/" component = {Menu} />

@@ -33,6 +33,7 @@ export function generateAllLegal(boardState, whosTeam, turnNum, depth){
     //takes in the board state similar to how its set up in board.js
 
     //reset the values back to default
+
     kingDoubleCheck = false;
     attackMap = [...defaultAttackMap];
     kingInCheck = false;
@@ -82,7 +83,6 @@ export function generateAllLegal(boardState, whosTeam, turnNum, depth){
 
     if(kingDoubleCheck){
         if(totalMovesFound == 0){
-            console.log("checkmate");
             return "checkmate";
             
         }
@@ -114,7 +114,7 @@ export function generateAllLegal(boardState, whosTeam, turnNum, depth){
         }
         else return "stalemate";
     }
-    return [allLegalMoves, totalMovesFound, alliedTeam];
+    return [allLegalMoves, totalMovesFound, alliedTeam, kingInCheck];
 }
 
 function generateAttackSpaces(boardState, pieceIndex){
