@@ -1,0 +1,81 @@
+.resignButtons{
+    width: min(6vw, 6vh);
+    height: 40%;
+    border-radius: 10%;
+    box-shadow: 0 0 0 0.1vw rgb(126, 182, 199);
+    border: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: none;
+    /*margin-left: 2vw;*/
+}
+
+.resignButtons:hover{
+    background-color: rgb(126, 182, 199);
+}
+
+.resignButtonsRed{
+    width: min(6vw, 6vh);
+    height: 40%;
+    margin-top: 10%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10%;
+    border: none;
+    background: rgb(255, 81, 75);
+    border-radius: 10%;
+    box-shadow: 0 0 0 0.1vw rgb(255, 81, 75);
+}
+
+.resignButtonsRed:hover {
+    background: rgb(255, 28, 20);
+}
+
+.fillToFit{
+    height: 100%;
+}
+
+.buttonV2:hover{
+    background-color:red;
+}
+
+.resignHolders {
+    width:min(7vw, 7vh);
+    height: 12%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.gameStateContainer{
+    width: min(30vw, 30vh);
+    height: 15%;
+    display: flex;
+    align-items: center;
+    background: rgb(235, 231, 222);
+    justify-content: center;
+    /*margin-left: 1vw;*/
+}
+
+.timeContainer{
+    height: 10%;
+    display: inline-flex;
+    align-items: center;
+    background: rgb(235, 231, 222);
+}
+
+.uiStuff {
+    margin-left: 1vw;
+    height : min(83vh, 83vw);
+}
+
+h1{
+    margin:0;
+}
+
+.boardContainer{
+    
+}
