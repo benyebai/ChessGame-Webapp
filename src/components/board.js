@@ -31,6 +31,7 @@ export class Board extends React.Component {
     constructor(props){
 
         console.log(convertSeconds(3601));
+        generateRandomNumsZobrist();
         
 
         super(props);
@@ -114,7 +115,8 @@ export class Board extends React.Component {
             preparedResign : false,
             previousSpot : -1,
             spotNow : -1,
-            underCheck : -1
+            underCheck : -1,
+            aiWillMove : false
         }
 
         this.movePiece = this.movePiece.bind(this);
@@ -361,7 +363,12 @@ export class Board extends React.Component {
                 console.log("was originally " + (fuck2).toString())
             }
             */
-    
+
+            /*
+            this.setState({
+                aiWillMove:true
+            });
+            
             
             resetGlobalVar("black", true);
             for(let i = 1; i < 10; i++){
@@ -370,6 +377,7 @@ export class Board extends React.Component {
                 if(returnVal === "failed"){ console.log(i - 1); break; }
             }
             this.movePieceAi(oldBest[0], oldBest[1]);
+            */
             
         }
         
@@ -396,14 +404,10 @@ export class Board extends React.Component {
     movePieceAi(from, to){
         //console.log(from, to);
         let fakeBoard = this.state.board;
+        let fuck = to;
         if(from == null || to == null){
             //youre ion checkmate
             return;
-        }
-
-        if(this.state.myTeam === "black"){
-            from = 63 - from;
-            to = 63 - to;
         }
 
         if(to === "right castle") {
@@ -456,11 +460,32 @@ export class Board extends React.Component {
             }
         }
 
+        let enemyTeam = !this.state.whitesTurn ? "white" : "black";
+        let movingTeam = this.state.whitesTurn ? "White" : "Black";
+
+        let potentialEnemyMoves = generateAllLegal(fakeBoard, enemyTeam, this.state.turnNum);
+        if(potentialEnemyMoves == "checkmate") this.checkmate(movingTeam);
+        if(potentialEnemyMoves == "stalemate") this.stalemate();
+
+        let enemyCheck = -1;
+        if(potentialEnemyMoves[3]){
+            //if my king is under check after that move, find king
+            for(let i = 0; i < 64; i++){
+                if(fakeBoard[i] != "em" && fakeBoard[i].piece == "king" && fakeBoard[i].team == enemyTeam){
+                    enemyCheck = i;
+                    break;
+                }
+            }
+        }
         this.setState(prevState => {
             return({
             "board": fakeBoard,
             turnNum: prevState.turnNum + 1,
-            whitesTurn : !prevState.whitesTurn
+            whitesTurn : !prevState.whitesTurn,
+            previousSpot : from,
+            spotNow : to,
+            underCheck: enemyCheck,
+            aiWillMove : false
             });
         });
 
@@ -692,9 +717,9 @@ export class Board extends React.Component {
         //because of that i change what i need to over here first before changing state
         let fakeState = this.state;
         fakeState.board = fakeBoard;
-        fakeState.turnNum = this.state.turnNum + 1
-        fakeState.whitesTurn = !this.state.whitesTurn
-        fakeState.choosingPromotion = -1
+        fakeState.turnNum = this.state.turnNum + 1;
+        fakeState.whitesTurn = !this.state.whitesTurn;
+        fakeState.choosingPromotion = -1;
 
         socket.emit("sendInfo", {"room" : this.props.match.params.id, state : fakeState});
 
@@ -743,13 +768,41 @@ export class Board extends React.Component {
         //functions also does the things that the movepiece didnt do since promoting a pawn pauses the game
     }
 
+    componentDidUpdate(){
+        if(this.props.gamemode == "ai"){
+            let aiTeam = this.state.myTeam == "white" ? "black" : "white"
+            console.log(aiTeam)
+            if((this.state.whitesTurn && this.state.myTeam != "white") || (!this.state.whitesTurn && this.state.myTeam == "white")){
+                resetGlobalVar(aiTeam, true);
+                for(let i = 1; i < 10; i++){
+                    resetGlobalVar(aiTeam, false);
+                    
+                    let returnVal = decideBestAiMoveButBad([...this.state.board], aiTeam, this.state.turnNum, i, -100000000, 100000000, 0);
+                    if(returnVal === "failed"){ console.log(i - 1); break; }
+                }
+                this.movePieceAi(oldBest[0], oldBest[1]);
+            }
+        }
+    }
+
+    componentDidMount(){
+        if(this.props.gamemode == "ai"){
+            let aiTeam = this.state.myTeam == "white" ? "black" : "white"
+            console.log("asd")
+            if((this.state.whitesTurn && this.state.myTeam != "white") || (!this.state.whitesTurn && this.state.myTeam == "white")){
+                resetGlobalVar(aiTeam, true);
+                for(let i = 1; i < 10; i++){
+                    resetGlobalVar(aiTeam, false);
+                    
+                    let returnVal = decideBestAiMoveButBad([...this.state.board], aiTeam, this.state.turnNum, i, -10000000, 100000000, 0);
+                    if(returnVal === "failed"){ console.log(i - 1); break; }
+                }
+                this.movePieceAi(oldBest[0], oldBest[1]);
+            }
+        }
+    }
+
     componentWillMount() {
-        /*
-        socket.on("board", (data) => {
-            console.log(data);
-            this.setState(data);
-        });
-        */
         
         if(!alreadyJoined && this.state.gamemode === "multiplayer"){
             alreadyJoined = true;
@@ -838,6 +891,9 @@ export class Board extends React.Component {
         }
 
         let entireBoard = [];
+
+        console.log(this.state.previousSpot);
+        console.log(this.state.spotNow)
 
         for(let i = 0; i < 8; i ++){
             let currentRow = [];

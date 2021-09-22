@@ -102,27 +102,28 @@ class Menu extends React.Component {
 
     render() {
         return(
-            <div>
-                <h1 className = "centered">Chess Online</h1>
+            <div className = "containerEverythingMenu">
+                <h1 className = "centered normalH1" style = {{marginTop:"5vh"}}>Chess Online</h1>
+                
                 <div className = "chooseGameType">
                     <div className = "Online normalDivider">
 
                         <button onClick = {this.generateRoom} className = "button">
-                            <h1>Play Online</h1>
+                            <h1 className = "buttonText">Play Online</h1>
                         </button>
 
                     </div>
                     <div className = "VsAi normalDivider">
 
                         <button onClick = {this.moveToAi} className = "button">
-                            <h1>Vs Ai</h1>
+                            <h1 className = "buttonText">Vs Ai</h1>
                         </button>
 
                     </div>
                     <div className = "Local normalDivider">
                         
                         <button onClick = {this.moveToLocal} className = "button">
-                            <h1>Local</h1>
+                            <h1 className = "buttonText">Local</h1>
                         </button>
 
                     </div>
@@ -130,10 +131,10 @@ class Menu extends React.Component {
 
                 <div className = "options">
                     <div className = "timeOptions">
-                        <h1>{this.state.actualSliderValTime} Minutes per side</h1>
+                        <h1 className = "sliderText">{this.state.actualSliderValTime} Minutes per side</h1>
                         <input type="range" value={this.state.sizeTime} onChange={this.changeSliderTime} style = {{width : "30vw"}}/>
-
-                        <h1>{this.state.actualSliderValIncrement} Second increment after move</h1>
+                        <div style ={{height:"5vh"}} />
+                        <h1 className = "sliderText">{this.state.actualSliderValIncrement} Second increment after move</h1>
                         <input type="range" value={this.state.sizeIncrement} onChange={this.changeSliderIncrement} style = {{width : "30vw"}}/>
                     </div>
                     <div className = "teamOptions">

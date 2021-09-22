@@ -13,7 +13,8 @@
 .chooseGameType{
     display: flex;   
     justify-content: center;
-    width:100%;
+    width:70%;
+    margin-top: 7vh;
 }
 
 .chooseGameType > .normalDivider{
@@ -48,8 +49,7 @@
 }
 
 .buttonChooseTeam{
-    width: 7vw;
-    height: 7vw;
+    width: max(7vw, 10vh);
     border: 0;
     padding: 0;
     margin:0;
@@ -86,4 +86,26 @@
 
 .buttonV2:hover{
     background-color:red;
+}
+
+.normalH1{
+    font-size: min(7vw, 7vh);
+    font-weight: 500;
+}
+
+.containerEverythingMenu{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.sliderText{
+    font-size: min(4vh, 4vw);
+    font-weight: 200;
+}
+
+.buttonText{
+    font-size: min(3vh, 3vw);
+    font-weight: 200;
 }
