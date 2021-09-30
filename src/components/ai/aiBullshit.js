@@ -372,7 +372,9 @@ function evaluateKingPosition(board, team, weightOfEndGame) {
     let kingDstToCentreColumn = Math.max(3 - kingColumn, kingColumn - 4);
     let kingDstToCentreRow = Math.max(3 - kingRow, kingRow - 4);
     let kingDstFromCentre = kingDstToCentreColumn + kingDstToCentreRow
-    evaluation += kingDstFromCentre
+    evaluation += kingDstFromCentre*weightOfEndGame
+
+    return evaluation
 
     
 
@@ -410,6 +412,10 @@ function evaluateValue(board, team){
             }
         }
     }
+
+    let weighted = (3900 - totalVal) / 200
+
+    totalVal += evaluateKingPosition(board, team, weighted)
 
     return totalVal;
 }
