@@ -30,28 +30,28 @@ export function Promotion({whichWay, team, promoteFunc}){
 function ChooseQueen({promoteFunc, team}){
     return(
         <button onClick = {() => promoteFunc("queen")} className = "promotionButton" style = {{borderBottom:"0"}}>
-            <img src = {`/images/${team}Queen.png`} style = {{width:"100px"}} />
+            <img src = {`/images/${team}Queen.png`} style = {{width:"min(11vw, 11vh)"}} />
         </button>
     );
 }
 function ChooseKnight({promoteFunc, team}){
     return(
         <button onClick = {() => promoteFunc("knight")} className = "promotionButton" style = {{borderBottom:"0"}}>
-            <img src = {`/images/${team}Knight.png`} style = {{width:"100px"}} />
+            <img src = {`/images/${team}Knight.png`} style = {{width:"min(11vw, 11vh)"}} />
         </button>
     );
 }
 function ChooseBishop({promoteFunc, team}){
     return(
         <button onClick = {() => promoteFunc("bishop")} className = "promotionButton" style = {{borderBottom:"0"}}>
-            <img src = {`/images/${team}Bishop.png`} style = {{width:"100px"}} />
+            <img src = {`/images/${team}Bishop.png`} style = {{width:"min(11vw, 11vh)"}} />
         </button>
     );
 }
 function ChooseRook({promoteFunc, team}){
     return(
         <button onClick = {() => promoteFunc("rook")} className = "promotionButton" >
-            <img src = {`/images/${team}Rook.png`} style = {{width:"100px"}} />
+            <img src = {`/images/${team}Rook.png`} style = {{width:"min(11vw, 11vh)"}} />
         </button>
     );
 }

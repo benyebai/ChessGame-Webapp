@@ -18,6 +18,7 @@ export var fuckMe = 0;
 var myTeam = "black";
 var oldMoves = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]];
 var zobristKey = 0;
+var lowestDepth = 0;
 export var oldBest = [];
 export var zobristHash;
 export var imTrans = 0;
@@ -414,8 +415,8 @@ function evaluateValue(board, team){
 }
 
 export function decideBestAiMoveButBad(board, team, turnNum, depth, alpha, beta){
-    if(fuckMe === 400000) console.log("youve gone to a depth of 400k, so im stopping the function");
-    if(fuckMe >= 400000) return "failed";
+    if(fuckMe === 100000) console.log("youve gone to a depth of 100k, so im stopping the function");
+    if(fuckMe >= 100000) return "failed";
     let hashType = "alpha";
     let val = probeHash(zobristHash, alpha, beta, depth);
     if(val != "failed") { imTrans += 1; return val; }
@@ -438,28 +439,30 @@ export function decideBestAiMoveButBad(board, team, turnNum, depth, alpha, beta)
     }
 
     let oldBoard = [...board];
-    let movesAtCurrent = generateAllLegal(board, team, turnNum);
-    let ordered = lazyMoveOrder2([...board], movesAtCurrent, zobristHash);
-    let myBestMove = null;
-    
+    let movesAtCurrent = generateAllLegal(board, team, turnNum, depth);
 
-    if(movesAtCurrent === "checkmate") return -100000000;
+    if(movesAtCurrent === "checkmate") {return -100000000};
     if(movesAtCurrent === "stalemate") return 0;
 
+    let ordered = lazyMoveOrder2([...board], movesAtCurrent, zobristHash);
+
+    let myBestMove = null;
+    
     for(let i = 0; i < ordered.length; i++){
         let curr = ordered[i];
         let oldZobKey = zobristHash;
         
-        let newBoard = makeBoardMove(board, curr[0], curr[1], ordered, i);
+        let newBoard = makeBoardMove(board, curr[0], curr[1]);
 
-        zobristHash = findingHash(board, turnNum, team);
+        //zobristHash = findingHash(board, turnNum, team);
         
         let previousMove = previous;
-        let oppositeTeam = board[curr[0]].team;
+        let oppositeTeam = team;
 
         if (oppositeTeam === 'white') {
             oppositeTeam = 'black';
-        } else {
+        } 
+        else {
             oppositeTeam = 'white';
         }
 
@@ -516,10 +519,10 @@ function fakeQuickSort(moves){
     return moves;
 }
 
-export function makeBoardMove(board, start, move, a, b, c){
+export function makeBoardMove(board, start, move){
     //all special moves that i can think of
     //let board = [...boardasd];
-    if(board[start] === "em") {console.log(a); console.log(b); console.log(board);}
+    //if(board[start] === "em") {console.log(a); console.log(b); console.log(board);}
 
     if(move === "right castle"){
         board[start + 2] = board[start];
@@ -532,8 +535,8 @@ export function makeBoardMove(board, start, move, a, b, c){
     else if (move === "left castle"){
         board[start - 2] = board[start];
         board[start] = "em";
-        board[start - 4] = board[start - 1];
-        board[start - 1] = "em";
+        board[start - 1] = board[start - 4];
+        board[start - 4] = "em";
         return board;
     }
     else if(Array.isArray(move)){

@@ -7,19 +7,55 @@ import { DndProvider } from 'react-dnd';
 
 import {BrowserRouter as Router, Route, Switch} from "react-router-dom";
 
+//im an autist, only way i found to alter the time values for chess from menu.js
+//is using exported funcs to change the varaibles
+
+var amountTime = window.sessionStorage.getItem("amountTime");
+if(amountTime == null) amountTime = 600;
+
+var amountIncrement =  window.sessionStorage.getItem("amountIncrement");
+if(amountIncrement == null) amountIncrement = 0;
+
+var whichTeam = window.sessionStorage.getItem("whichTeam");
+if(whichTeam == null) whichTeam = "white";
+
 class App extends React.Component {
 
   render() {
     return(
       <DndProvider backend = {HTML5Backend}>
         
-
         <Router>
           <div>
             <Switch>
-              <Route exact path="/game/:id" render={(props) => (<Board {...props} gamemode = "multiplayer"/>)} />
-              <Route exact path="/local" render={(props) => (<Board {...props} gamemode = "local"/>)} />
-              <Route exact path="/ai" render={(props) => (<Board {...props} gamemode = "ai"/>)} />
+              
+              <Route exact path="/game/:id" render={(props) => (
+              <Board 
+                {...props}
+                gamemode = "multiplayer"
+                startingTime = {amountTime}
+                timeRestored = {amountIncrement}
+                myTeam = {whichTeam}
+              />)}/>
+
+              <Route exact path="/local" render={(props) => (
+              <Board
+                {...props}
+                gamemode = "local"
+                startingTime = {amountTime} 
+                timeRestored = {amountIncrement}
+                myTeam = {whichTeam}
+                />)}/>
+
+              <Route exact path="/ai" render={(props) => (
+              <Board
+                {...props}
+                gamemode = "ai"
+                startingTime = {amountTime} 
+                timeRestored = {amountIncrement}
+                myTeam = {whichTeam}
+              />)} />
+
               <Route exact path="/" component = {Menu} />
             </Switch>
           </div>

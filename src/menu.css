@@ -3,6 +3,109 @@
 }
 
 .button{
-    width: 50px;
-    height: 50px;
+    width: 200px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chooseGameType{
+    display: flex;   
+    justify-content: center;
+    width:70%;
+    margin-top: 7vh;
+}
+
+.chooseGameType > .normalDivider{
+    width: 33%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.options{
+    width:100vw;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+}
+.options > .timeOptions{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.options > .teamOptions{
+    width: 30vw;
+    margin-top: 3vh;
+    display: flex;
+    justify-content:space-around;
+
+}
+
+.buttonChooseTeam{
+    width: max(7vw, 10vh);
+    border: 0;
+    padding: 0;
+    margin:0;
+    border-radius: 1vw;
+}
+
+.selectedButton {
+    outline: 0;
+    border-radius: 1vw;
+    box-shadow: 0 0 0 0.3vw rgb(126, 182, 199);
+}
+
+.fillToContainerImage {
+    width: 100%;
+    border-radius: 1vw;
+}
+
+.padded{
+    width:8vw;
+    height:8vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.buttonV2{
+    width:7vw;
+    height:7vw;
+    padding: 1vw;
+    border: 0;
+    margin: 0;
+    border-radius: 1vw;
+}
+
+.buttonV2:hover{
+    background-color:red;
+}
+
+.normalH1{
+    font-size: min(7vw, 7vh);
+    font-weight: 500;
+}
+
+.containerEverythingMenu{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.sliderText{
+    font-size: min(4vh, 4vw);
+    font-weight: 200;
+}
+
+.buttonText{
+    font-size: min(3vh, 3vw);
+    font-weight: 200;
 }

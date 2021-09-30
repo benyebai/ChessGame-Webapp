@@ -17,6 +17,7 @@ import { resetGlobalVar } from './ai/aiBullshit';
 import { fuckMe } from './ai/aiBullshit';
 import { orderlessDecideBestAiMove } from './ai/aiBullshit';
 import { findingHash, generateRandomNumsZobrist} from './ai/zobristHashGenerator';
+import "./board.css";
 
 var socket = io("http://localhost:3333/");
 var alreadyJoined = false;
@@ -29,11 +30,23 @@ export class Board extends React.Component {
 
     constructor(props){
 
-        console.log(convertSeconds(123));
-        console.log(convertSeconds(1500));
-        console.log(convertSeconds(600));
-        console.log(generateRandomNumsZobrist())
+        console.log(convertSeconds(3601));
+        generateRandomNumsZobrist();
+        
+
         super(props);
+        let myTeam = this.props.myTeam
+        if(this.props.myTeam === "random"){
+            if(Math.random() > 0.5) myTeam = "black";
+            else myTeam = "white";
+        }
+        let startingTime = this.props.startingTime;
+        let infTime = false;
+        if(startingTime == "1/2") startingTime = 30;
+        else if(startingTime == "1/4") startingTime = 15;
+        else if(startingTime == "Infinity") infTime = true;
+        else startingTime = parseInt(startingTime)
+
         if(this.props.gamemode === "local" || this.props.gamemode === "ai"){
             finishedJoining = true;
             alreadyJoined = true;
@@ -93,10 +106,17 @@ export class Board extends React.Component {
             whitesTurn: true,
             choosingPromotion : -1,
             gamemode: this.props.gamemode,
-            secondsLeftWhite : 600,
-            secondsLeftBlack : 600,
+            secondsLeftWhite : startingTime,
+            secondsLeftBlack : startingTime,
             gaming: true,
-            winner : null
+            winner : null,
+            myTeam : myTeam,
+            infTime : infTime,
+            preparedResign : false,
+            previousSpot : -1,
+            spotNow : -1,
+            underCheck : -1,
+            aiWillMove : false
         }
 
         this.movePiece = this.movePiece.bind(this);
@@ -107,6 +127,8 @@ export class Board extends React.Component {
     }
 
     movePiece(from, to){
+
+        if(!this.state.gaming) return;
 
         if(this.state.myTeam === "black"){
             from = 63 - from;
@@ -220,7 +242,8 @@ export class Board extends React.Component {
                 fakeBoard[to] = pieceMove;
                 this.setState({
                     "board": fakeBoard,
-                    choosingPromotion : to
+                    choosingPromotion : to,
+                    previousSpot : from
                 });
                 return;
             }
@@ -239,48 +262,92 @@ export class Board extends React.Component {
 
         let currentTurn = this.state.turnNum;
 
+
+
         if(this.props.gamemode === "local"){
 
-            if(this.state.whitesTurn){
-                this.timerBlack = setInterval(() => {
+            if(!this.state.infTime){
+
+                if(this.state.whitesTurn){
+                    this.timerBlack = setInterval(() => {
+                        this.setState(state => ({
+                        secondsLeftBlack : state.secondsLeftBlack - 1
+                        }));
+                        if(this.state.secondsLeftBlack === 0) this.checkmate("White");
+                    }, 1000);
+                    clearInterval(this.timerWhite);
+                    console.log(this.state.secondsLeftWhite);
+                    console.log(this.state.secondsLeftWhite + parseInt(this.props.timeRestored));
                     this.setState(state => ({
-                    secondsLeftBlack : state.secondsLeftBlack - 1
-                    })); console.log(this.state.secondsLeftBlack);
-                }, 1000);
-                clearInterval(this.timerWhite);
-            }
-            else{
-                this.timerWhite = setInterval(() => {
+                        secondsLeftWhite : state.secondsLeftWhite + parseInt(this.props.timeRestored)
+                    }));
+                }
+                else{
+                    this.timerWhite = setInterval(() => {
+                        this.setState(state => ({
+                        secondsLeftWhite : state.secondsLeftWhite - 1
+                        }));
+                        if(this.state.secondsLeftWhite === 0) this.checkmate("Black");
+                    }, 1000);
+                    clearInterval(this.timerBlack);
                     this.setState(state => ({
-                    secondsLeftWhite : state.secondsLeftWhite - 1
-                    })); console.log(this.state.secondsLeftWhite);
-                }, 1000);
-                clearInterval(this.timerBlack);
+                        secondsLeftBlack : state.secondsLeftBlack + parseInt(this.props.timeRestored)
+                    }));
+                }
             }
         }
 
         pieceMove.moved = true;
         pieceMove.movedBefore = true;
+
+        let enemyTeam = !this.state.whitesTurn ? "white" : "black";
+        let movingTeam = this.state.whitesTurn ? "White" : "Black";
+
+        console.log(enemyTeam);
+
+        let potentialEnemyMoves = generateAllLegal(fakeBoard, enemyTeam, this.state.turnNum);
+        if(potentialEnemyMoves == "checkmate") this.checkmate(movingTeam);
+        if(potentialEnemyMoves == "stalemate") this.stalemate();
+
+        let enemyCheck = -1;
+        if(potentialEnemyMoves[3]){
+            //if my king is under check after that move, find king
+            for(let i = 0; i < 64; i++){
+                if(fakeBoard[i] != "em" && fakeBoard[i].piece == "king" && fakeBoard[i].team == enemyTeam){
+                    enemyCheck = i;
+                    break;
+                }
+            }
+        }
         
         this.setState(prevState => {
             return({
             "board": fakeBoard,
             turnNum: prevState.turnNum + 1,
-            whitesTurn : !prevState.whitesTurn
+            whitesTurn : !prevState.whitesTurn,
+            previousSpot : from,
+            spotNow : to,
+            underCheck : enemyCheck
             });
         });
         
         if(this.props.gamemode === "ai"){
             
             resetGlobalVar("black", true);
-
             
-            let returnVal = decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, 4, -10000000, 100000000);
+            /*
+            let returnVal = 0;
+            for(let i = 1; i < 10; i++){
+                resetGlobalVar("black", true);
+                let returnVal = decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, i, -10000000, 100000000);
+                if(returnVal === "failed") {console.log(i); break;}
+                oldBest = [...bestMove];
+            }
+            //if(returnVal === "failed") decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, 3, -10000000, 100000000);
+            this.movePieceAi(oldBest[0], oldBest[1]);
             console.log(fuckMe);
-            //console.log(imTrans);
-            let fuck1 = fuckMe;
-            if(returnVal === "failed") decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, 3, -10000000, 100000000);
-            this.movePieceAi(bestMove[0], bestMove[1]);
+            console.log(imTrans);
+            */
             
             
             //console.log(findingHash([...fakeBoard], this.state.turnNum, "black"));
@@ -296,36 +363,51 @@ export class Board extends React.Component {
                 console.log("was originally " + (fuck2).toString())
             }
             */
-           
+
             /*
+            this.setState({
+                aiWillMove:true
+            });
+            
+            
             resetGlobalVar("black", true);
             for(let i = 1; i < 10; i++){
                 resetGlobalVar("black", false);
                 let returnVal = decideBestAiMoveButBad([...fakeBoard], 'black', this.state.turnNum, i, -10000000, 100000000, 0);
-                if(returnVal === "failed"){ console.log(i); break; }
+                if(returnVal === "failed"){ console.log(i - 1); break; }
             }
             this.movePieceAi(oldBest[0], oldBest[1]);
-            console.log(fuckMe);
-            console.log(imTrans);
-            
-            console.log(oldBest[0], oldBest[1]);
             */
+            
         }
         
-        socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state});
+        if(this.props.gamemode === "multiplayer"){
+            socket.emit("sendInfo", {"room" : this.props.match.params.id, state : this.state});
+        }
+    }
+
+    checkmate(who){
+        this.setState({
+            winner : who,
+            gaming : false
+        });
+        clearInterval(this.timerBlack);
+        clearInterval(this.timerWhite);
+    }
+
+    stalemate(){
+        console.log("stalemate");
+        clearInterval(this.timerBlack);
+        clearInterval(this.timerWhite);
     }
 
     movePieceAi(from, to){
         //console.log(from, to);
         let fakeBoard = this.state.board;
+        let fuck = to;
         if(from == null || to == null){
             //youre ion checkmate
             return;
-        }
-
-        if(this.state.myTeam === "black"){
-            from = 63 - from;
-            to = 63 - to;
         }
 
         if(to === "right castle") {
@@ -378,11 +460,32 @@ export class Board extends React.Component {
             }
         }
 
+        let enemyTeam = !this.state.whitesTurn ? "white" : "black";
+        let movingTeam = this.state.whitesTurn ? "White" : "Black";
+
+        let potentialEnemyMoves = generateAllLegal(fakeBoard, enemyTeam, this.state.turnNum);
+        if(potentialEnemyMoves == "checkmate") this.checkmate(movingTeam);
+        if(potentialEnemyMoves == "stalemate") this.stalemate();
+
+        let enemyCheck = -1;
+        if(potentialEnemyMoves[3]){
+            //if my king is under check after that move, find king
+            for(let i = 0; i < 64; i++){
+                if(fakeBoard[i] != "em" && fakeBoard[i].piece == "king" && fakeBoard[i].team == enemyTeam){
+                    enemyCheck = i;
+                    break;
+                }
+            }
+        }
         this.setState(prevState => {
             return({
             "board": fakeBoard,
             turnNum: prevState.turnNum + 1,
-            whitesTurn : !prevState.whitesTurn
+            whitesTurn : !prevState.whitesTurn,
+            previousSpot : from,
+            spotNow : to,
+            underCheck: enemyCheck,
+            aiWillMove : false
             });
         });
 
@@ -608,23 +711,44 @@ export class Board extends React.Component {
 
         let fakeBoard = this.state.board;
         fakeBoard[this.state.choosingPromotion].piece = what;
+        let newSpot = this.state.choosingPromotion;
 
         //due to the nature of setstate being an async functions, i cant rely on it finishing before the socket emit runs
         //because of that i change what i need to over here first before changing state
         let fakeState = this.state;
         fakeState.board = fakeBoard;
-        fakeState.turnNum = this.state.turnNum + 1
-        fakeState.whitesTurn = !this.state.whitesTurn
-        fakeState.choosingPromotion = -1
+        fakeState.turnNum = this.state.turnNum + 1;
+        fakeState.whitesTurn = !this.state.whitesTurn;
+        fakeState.choosingPromotion = -1;
 
         socket.emit("sendInfo", {"room" : this.props.match.params.id, state : fakeState});
+
+        let enemyTeam = this.state.whitesTurn ? "white" : "black";
+        let movingTeam = !this.state.whitesTurn ? "White" : "Black";
+
+        let potentialEnemyMoves = generateAllLegal([...fakeBoard], enemyTeam, this.state.turnNum);
+        if(potentialEnemyMoves == "checkmate") this.checkmate(movingTeam);
+        if(potentialEnemyMoves == "stalemate") this.stalemate();
+
+        let enemyCheck = -1;
+        if(potentialEnemyMoves[3]){
+            //if my king is under check after that move, find king
+            for(let i = 0; i < 64; i++){
+                if(fakeBoard[i] != "em" && fakeBoard[i].piece == "king" && fakeBoard[i].team == enemyTeam){
+                    enemyCheck = i;
+                    break;
+                }
+            }
+        }
 
         this.setState(prevState => {
             return({
             "board": fakeBoard,
             turnNum: prevState.turnNum + 1,
-            whitesTurn : !prevState.whitesTurn,
-            choosingPromotion : -1
+            whitesTurn: prevState.whitesTurn,
+            choosingPromotion : -1,
+            spotNow : newSpot,
+            underCheck : enemyCheck
             });
         });
 
@@ -642,29 +766,47 @@ export class Board extends React.Component {
             });
         }
         //functions also does the things that the movepiece didnt do since promoting a pawn pauses the game
-
     }
 
-    whiteWins(){
-
+    componentDidUpdate(){
+        if(this.props.gamemode == "ai"){
+            let aiTeam = this.state.myTeam == "white" ? "black" : "white"
+            console.log(aiTeam)
+            if((this.state.whitesTurn && this.state.myTeam != "white") || (!this.state.whitesTurn && this.state.myTeam == "white")){
+                resetGlobalVar(aiTeam, true);
+                for(let i = 1; i < 10; i++){
+                    resetGlobalVar(aiTeam, false);
+                    
+                    let returnVal = decideBestAiMoveButBad([...this.state.board], aiTeam, this.state.turnNum, i, -100000000, 100000000, 0);
+                    if(returnVal === "failed"){ console.log(i - 1); break; }
+                }
+                this.movePieceAi(oldBest[0], oldBest[1]);
+            }
+        }
     }
 
-    blackWins(){
-
+    componentDidMount(){
+        if(this.props.gamemode == "ai"){
+            let aiTeam = this.state.myTeam == "white" ? "black" : "white"
+            console.log("asd")
+            if((this.state.whitesTurn && this.state.myTeam != "white") || (!this.state.whitesTurn && this.state.myTeam == "white")){
+                resetGlobalVar(aiTeam, true);
+                for(let i = 1; i < 10; i++){
+                    resetGlobalVar(aiTeam, false);
+                    
+                    let returnVal = decideBestAiMoveButBad([...this.state.board], aiTeam, this.state.turnNum, i, -10000000, 100000000, 0);
+                    if(returnVal === "failed"){ console.log(i - 1); break; }
+                }
+                this.movePieceAi(oldBest[0], oldBest[1]);
+            }
+        }
     }
 
     componentWillMount() {
-        /*
-        socket.on("board", (data) => {
-            console.log(data);
-            this.setState(data);
-        });
-        */
         
         if(!alreadyJoined && this.state.gamemode === "multiplayer"){
             alreadyJoined = true;
-
-            socket.emit("joinRoom", this.props.match.params.id, "white", (returnData) =>{
+            socket.emit("joinRoom", this.props.match.params.id, this.state.myTeam, (returnData) =>{
                 finishedJoining = true;
 
                 if(returnData == "room full"){
@@ -691,6 +833,7 @@ export class Board extends React.Component {
         }
 
         socket.on("changeState", (data) => {
+            if(!this.state.gaming) return;
             let currentTeam = this.state.myTeam;
             data.myTeam = currentTeam;
             if(this.state.secondsLeftWhite < data.secondsLeftWhite) data.secondsLeftWhite = this.state.secondsLeftWhite;
@@ -725,8 +868,6 @@ export class Board extends React.Component {
         });
     }
 
-
-
     render() {
         if(!finishedJoining) return(
             <div></div>
@@ -751,14 +892,23 @@ export class Board extends React.Component {
 
         let entireBoard = [];
 
+        console.log(this.state.previousSpot);
+        console.log(this.state.spotNow)
+
         for(let i = 0; i < 8; i ++){
             let currentRow = [];
             for(let j = 0; j < 8; j++){
                 let squareIndex = (i * 8) + j;
+                let realSquareInd = squareIndex;
                 console.log()
                 if(this.state.myTeam === "black") squareIndex = 63 - squareIndex;
 
-                let squareProps = {row : i, col : j, board:this};
+                let highlight = false;
+                let checkHigh = false;
+                if(this.state.spotNow == squareIndex || this.state.previousSpot == squareIndex) highlight = true;
+                if(this.state.underCheck == squareIndex) checkHigh = true;
+
+                let squareProps = {row : i, col : j, board:this, highlight : highlight, checkHighlight : checkHigh};
 
                 if(this.state.board[squareIndex] === "em"){
                     currentRow.push(<Square props = {squareProps} />);
@@ -769,7 +919,7 @@ export class Board extends React.Component {
                         <Promotion 
                             promoteFunc = {this.promotePawn}
                             team = {this.state.board[squareIndex].team}
-                            whichWay = {squareIndex < 8 ? "down" : "up"}
+                            whichWay = {realSquareInd < 8 ? "down" : "up"}
                         />
                     </Square>
                     );
@@ -789,24 +939,107 @@ export class Board extends React.Component {
             entireBoard.push(<div style = {{display:"flex"}}>{currentRow}</div>);
         }
 
-        let fuck = <div></div>;
+        let gameState = (
+        <div className = "gameStateContainer">
+            <h1 style = {{fontSize:"min(4vw, 4vh)", fontWeight:"200"}}>{(this.state.whitesTurn ? "White" : "Black") + " To Move"}</h1>
+        </div>
+        );
         if(!this.state.gaming){
             let winner = this.state.winner;
-            fuck = (
-            <div>
-                <h1>{winner} wins</h1>
+            gameState = (
+            <div className = "gameStateContainer">
+                <h1 style = {{fontSize:"2vw", fontWeight:"200"}}>{winner} Wins</h1>
             </div>);
         }
 
+        //handles the resign button stuff
+        //if prepared to resign then show the cvancel and resign buttonl, otherwise just normal get prepared
+        let resignStuff;
+        if(!this.state.gaming){
+            resignStuff = (
+                <div className = "resignHolders">
+
+                </div>
+            );
+        }
+        else if(this.state.preparedResign){
+            resignStuff = (
+                <div className = "resignHolders">
+
+                    <button 
+                        onClick = {() => {this.setState({preparedResign : false})}}
+                        className = "resignButtons"
+                    >
+                        <img src = "/images/x.png" className = "fillToFit"/>
+                    </button>
+
+                    <button 
+                        onClick = {() => {
+                            if(this.props.gamemode === "local"){
+                                this.checkmate((this.state.whitesTurn ? "Black" : "White"));
+                                return;
+                            }
+                            this.checkmate((this.state.myTeam === "white" ? "Black" : "White"));
+                        }}
+                        className = "resignButtonsRed"
+                    >
+                        <img src = "/images/flag.png" className = "fillToFit"/>
+                    </button>
+
+                </div>
+            );
+        }
+        else{
+            resignStuff = (
+                <div className = "resignHolders">
+                    <button 
+                        onClick = {() => {this.setState({preparedResign : true})}}
+                        className = "resignButtons"
+                    >
+                        <img src = "/images/flag.png" className = "fillToFit"/>
+                    </button>
+                    <div style = {{height:"40%", marginTop:"10%"}}/>
+                </div>
+            );
+        }
+
+        
+
         return(
-            <div style = {{width:"100%", height:"100%", display:"flex"}}>
+            <div style = {{width:"100%", height:"100%", display:"flex", alignItems:"center", paddingTop:"3vh"}}>
             <CustomDragLayer />
-                <div>
+            <div style = {{width : "min(44vw, 44vh)"}} />
+                <div className = "boardContainer">
                     {entireBoard}
                 </div>
-            {this.props.gamemode !== "ai" ? <h1>white {convertSeconds(this.state.secondsLeftWhite)} <br /><br /> black {convertSeconds(this.state.secondsLeftBlack)}</h1> : <div />}
+
+            <div className = "uiStuff">
             
-            {fuck}
+                {(this.props.gamemode !== "ai" && !this.state.infTime) ? 
+                <div className = "timeContainer">
+                    <h1 style = {{fontSize : "6vh", marginLeft:"0.5vw", marginRight:"0.5vw", fontWeight:"400"}}>
+                        {this.state.myTeam === "white" ? convertSeconds(this.state.secondsLeftBlack) : convertSeconds(this.state.secondsLeftWhite)}
+                    </h1> 
+                </div>
+                : <div />}
+                {/*i dont know how good of a system this is but i put empty divs between the time and the opther stuff*/}
+                <div style = {{height:"20%"}} />
+                
+                {gameState}
+
+                {resignStuff}
+                <div style = {{height:"33%"}} />
+
+                {(this.props.gamemode !== "ai" && !this.state.infTime) ? 
+                <div className = "timeContainer">
+                    <h1 style = {{fontSize : "6vh", marginLeft:"0.5vw", marginRight:"0.5vw", fontWeight:"400"}}>
+                        {this.state.myTeam === "white" ? convertSeconds(this.state.secondsLeftWhite) : convertSeconds(this.state.secondsLeftBlack)}
+                    </h1> 
+                </div>
+                : <div />}
+
+            </div>
+
             </div>
         );
     }

@@ -26,6 +26,8 @@ io.on('connection', (socket) => {
 
   socket.on("joinRoom", (roomName, team, res) => {
 
+    if(team == "random") console.log("asd")
+
     if(roomIds[roomName] == null){
       res("nonexistent");
       return;
@@ -118,7 +120,6 @@ function changeBoard(state, socketInfo){
 
         roomIds[roomId].boardState.secondsLeftBlack = Math.min(oldState.secondsLeftBlack, state.secondsLeftBlack);
         roomIds[roomId].boardState.secondsLeftWhite = Math.min(oldState.secondsLeftWhite, state.secondsLeftWhite);
-        console.log(roomIds[roomId].boardState);
       }
     }
   }

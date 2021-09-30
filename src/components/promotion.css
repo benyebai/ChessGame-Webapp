@@ -1,7 +1,7 @@
 .promotionButton{
 
-    width:100px;
-    height:100px;
+    width:min(11vw, 11vh);
+    height:min(11vw, 11vh);
     margin : 0;
     padding: 0;
     z-index: 1000;
