@@ -491,6 +491,7 @@ export function lazyMoveOrder(board, info, imGay){
     let moves = info[0];
     let where = info[2];
 
+
     let existingMoves = [];
 
     let pawnVal = 1;
@@ -626,6 +627,8 @@ export function lazyMoveOrder2(board, info, zobKey){
 
     let moves = info[0];
     let where = info[2];
+
+    console.log(moves)
 
     let existingMoves = [];
 
