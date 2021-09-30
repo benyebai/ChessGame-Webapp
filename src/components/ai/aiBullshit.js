@@ -356,6 +356,27 @@ export function orderlessDecideBestAiMove(board, team, turnNum, depth, alpha, be
     return alpha
 }
 
+function evaluateKingPosition(board, team, weightOfEndGame) {
+    let evaluation = 0
+    let locationOfKing = null
+    for (let i = 0; i < 64; i++) {
+        if (board[i].piece === 'king' && board[i].team === team) {
+            locationOfKing = i
+        }
+    }
+
+    let kingColumn = Math.floor(locationOfKing/8) + 1
+    let kingRow =  ((Math.floor(locationOfKing/8) - (locationOfKing/8))/.125) + 1
+
+    let kingDstToCentreColumn = Math.max(3 - kingColumn, kingColumn - 4);
+    let kingDstToCentreRow = Math.max(3 - kingRow, kingRow - 4);
+    let kingDstFromCentre = kingDstToCentreColumn + kingDstToCentreRow
+    evaluation += kingDstFromCentre
+
+    
+
+}
+
 function evaluateValue(board, team){
     let totalVal = 0;
     for(let i = 0; i < board.length; i++){
