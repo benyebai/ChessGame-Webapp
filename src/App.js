@@ -7,7 +7,7 @@ import { DndProvider } from 'react-dnd';
 
 import {BrowserRouter as Router, Route, Switch} from "react-router-dom";
 
-//im an autist, only way i found to alter the time values for chess from menu.js
+//only way i found to alter the time values for chess from menu.js
 //is using exported funcs to change the varaibles
 
 var amountTime = window.sessionStorage.getItem("amountTime");
